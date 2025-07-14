@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
         android:label="workline_app"
         android:name="${applicationName}"
@@ -19,7 +22,7 @@
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
-              />
+              android:value="AIzaSyAE3Q3MpbAEYfbOOpmmsLSWjpBMKh-5TGc"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -30,6 +33,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+     <meta-data
+
+android:name="com.google.android.geo.API_KEY"
+android:value="AIzaSyAE3Q3MpbAEYfbOOpmmsLSWjpBMKh-5TGc"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

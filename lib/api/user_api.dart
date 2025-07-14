@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:workline_app/endpoint.dart';
-import 'package:workline_app/models/attendance_model.dart';
+import 'package:workline_app/endpoint/endpoint.dart';
 import 'package:workline_app/models/batch_model.dart' as batch_model;
 import 'package:workline_app/models/login_response.dart';
-import 'package:workline_app/models/training_model.dart' as training_model;
 import 'package:workline_app/models/register_response.dart';
+import 'package:workline_app/models/training_model.dart' as training_model;
 import 'package:workline_app/preferences/preferences_helper.dart';
-import 'package:flutter/foundation.dart';
 
 class UserApi {
   static Future<bool> login(String email, String password) async {

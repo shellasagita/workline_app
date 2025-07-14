@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:workline_app/screens/auth/forgot_password_screen.dart';
-import 'package:workline_app/screens/auth/reset_password_screen.dart';
-import 'package:workline_app/screens/splash/splash_screen.dart';
-import 'package:workline_app/screens/splash/intro_screen.dart';
 import 'package:workline_app/screens/auth/login_screen.dart';
 import 'package:workline_app/screens/auth/register_screen.dart';
+import 'package:workline_app/screens/auth/reset_password_screen.dart';
 import 'package:workline_app/screens/home/home_screen.dart';
+import 'package:workline_app/screens/splash/intro_screen.dart';
+import 'package:workline_app/screens/splash/splash_screen.dart';
 // import 'package:workline_app/screens/profile/profile_screen.dart';
 // import 'package:workline_app/screens/profile/edit_profile_screen.dart';
 // import 'package:workline_app/screens/history/history_screen.dart';
@@ -34,7 +34,7 @@ class AppRoutes {
     intro: (context) => const IntroScreen(),
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
-    // home: (context) => const HomeScreen(),
+    home: (context) => const HomeScreen(),
     forgot: (context) => const ForgotPasswordScreen(),
 
     reset: (context) {

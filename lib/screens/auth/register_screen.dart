@@ -1,9 +1,10 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:workline_app/api/user_api.dart';
 import 'package:workline_app/constants/app_colors.dart';
 import 'package:workline_app/constants/app_style.dart';
-import 'package:workline_app/api/user_api.dart';
 import 'package:workline_app/routes/app_routes.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -103,7 +104,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     if (success) {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(AppSnackBar.error("Registration Success. Please Login."));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         AppSnackBar.error("Registration failed. Please try again."),
@@ -206,6 +210,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     DropdownButtonFormField<int>(
                       value: _selectedTrainingId,
+                      isExpanded: true,
                       decoration: AppInputStyle.textField("Training"),
                       items:
                           _trainingItems.isEmpty
@@ -258,7 +263,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.cream,
                     ).copyWith(
-                      overlayColor: MaterialStateProperty.all(
+                      overlayColor: WidgetStateProperty.all(
                         AppColors.cream.withAlpha((0.1 * 255).toInt()),
                       ),
                     ),
