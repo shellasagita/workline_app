@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:workline_app/models/register_response.dart';
 
 class PreferencesHelper {
   static const String _keyToken = 'token';
@@ -34,4 +35,6 @@ class PreferencesHelper {
     await prefs.remove(_keyToken);
     await prefs.remove(_keyIsLoggedIn);
   }
+
+  static saveUser(User user) {}
 }

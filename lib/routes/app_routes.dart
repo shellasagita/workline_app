@@ -19,11 +19,8 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String home = '/home';
-  static const String forgot= '/forgot-password';
+  static const String forgot = '/forgot-password';
   static const String reset = '/reset-password';
-
-
-
 
   static const String profile = '/profile';
   static const String editProfile = '/edit-profile';
@@ -31,24 +28,21 @@ class AppRoutes {
   static const String checkIn = '/check-in';
   static const String checkOut = '/check-out';
   static const String settings = '/settings';
-  
 
   static final Map<String, WidgetBuilder> routes = {
     splash: (context) => const SplashScreen(),
     intro: (context) => const IntroScreen(),
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
-    home: (context) => const HomeScreen(),
+    // home: (context) => const HomeScreen(),
     forgot: (context) => const ForgotPasswordScreen(),
- 
 
-    
     reset: (context) {
       final email = ModalRoute.of(context)?.settings.arguments as String;
       return NewPasswordScreen(email: email);
     },
 
-    home: (context) => const HomeScreen(),
+    // home: (context) => const HomeScreen(),
 
     // profile: (context) => const ProfileScreen(),
     // editProfile: (context) => const EditProfileScreen(),

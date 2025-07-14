@@ -42,19 +42,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     debugPrint("Trainings fetched: ${trainings.length}");
 
     setState(() {
-      _batchItems = batches.map((b) {
-        return DropdownMenuItem<int>(
-          value: b.id,
-          child: Text("Batch ${b.batchKe}"),
-        );
-      }).toList();
+      _batchItems =
+          batches.map((b) {
+            return DropdownMenuItem<int>(
+              value: b.id,
+              child: Text("Batch ${b.batchKe}"),
+            );
+          }).toList();
 
-      _trainingItems = trainings.map((t) {
-        return DropdownMenuItem<int>(
-          value: t.id,
-          child: Text(t.title),
-        );
-      }).toList();
+      _trainingItems =
+          trainings.map((t) {
+            return DropdownMenuItem<int>(value: t.id, child: Text(t.title));
+          }).toList();
     });
   }
 
@@ -81,9 +80,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _selectedGender == null ||
         _selectedBatchId == null ||
         _selectedTrainingId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        AppSnackBar.error("Please complete all fields."),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(AppSnackBar.error("Please complete all fields."));
       return;
     }
 
@@ -123,7 +122,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              Text("Register", style: AppTextStyle.heading1.copyWith(color: Colors.white)),
+              Text(
+                "Register",
+                style: AppTextStyle.heading1.copyWith(color: Colors.white),
+              ),
               const SizedBox(height: 24),
               Container(
                 padding: const EdgeInsets.all(20),
@@ -138,12 +140,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: CircleAvatar(
                         radius: 40,
                         backgroundColor: AppColors.cream,
-                        backgroundImage: _selectedImage != null
-                            ? FileImage(_selectedImage!)
-                            : null,
-                        child: _selectedImage == null
-                            ? const Icon(Icons.add_a_photo, color: Colors.white)
-                            : null,
+                        backgroundImage:
+                            _selectedImage != null
+                                ? FileImage(_selectedImage!)
+                                : null,
+                        child:
+                            _selectedImage == null
+                                ? const Icon(
+                                  Icons.add_a_photo,
+                                  color: Colors.white,
+                                )
+                                : null,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -175,37 +182,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         DropdownMenuItem(value: "L", child: Text("Male")),
                         DropdownMenuItem(value: "P", child: Text("Female")),
                       ],
-                      onChanged: (value) => setState(() => _selectedGender = value),
+                      onChanged:
+                          (value) => setState(() => _selectedGender = value),
                     ),
                     const SizedBox(height: 16),
 
                     DropdownButtonFormField<int>(
                       value: _selectedBatchId,
                       decoration: AppInputStyle.textField("Batch"),
-                      items: _batchItems.isEmpty
-                          ? [
-                              const DropdownMenuItem(
-                                value: null,
-                                child: Text("Loading..."),
-                              )
-                            ]
-                          : _batchItems,
-                      onChanged: (value) => setState(() => _selectedBatchId = value),
+                      items:
+                          _batchItems.isEmpty
+                              ? [
+                                const DropdownMenuItem(
+                                  value: null,
+                                  child: Text("Loading..."),
+                                ),
+                              ]
+                              : _batchItems,
+                      onChanged:
+                          (value) => setState(() => _selectedBatchId = value),
                     ),
                     const SizedBox(height: 16),
 
                     DropdownButtonFormField<int>(
                       value: _selectedTrainingId,
                       decoration: AppInputStyle.textField("Training"),
-                      items: _trainingItems.isEmpty
-                          ? [
-                              const DropdownMenuItem(
-                                value: null,
-                                child: Text("Loading..."),
-                              )
-                            ]
-                          : _trainingItems,
-                      onChanged: (value) => setState(() => _selectedTrainingId = value),
+                      items:
+                          _trainingItems.isEmpty
+                              ? [
+                                const DropdownMenuItem(
+                                  value: null,
+                                  child: Text("Loading..."),
+                                ),
+                              ]
+                              : _trainingItems,
+                      onChanged:
+                          (value) =>
+                              setState(() => _selectedTrainingId = value),
                     ),
                     const SizedBox(height: 24),
 
@@ -219,9 +232,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           foregroundColor: Colors.white,
                           textStyle: AppTextStyle.button,
                         ),
-                        child: _isLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text("Register"),
+                        child:
+                            _isLoading
+                                ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                                : const Text("Register"),
                       ),
                     ),
                   ],
@@ -232,10 +248,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("Already have an account?",
-                      style: AppTextStyle.body.copyWith(color: Colors.white)),
+                  Text(
+                    "Already have an account?",
+                    style: AppTextStyle.body.copyWith(color: Colors.white),
+                  ),
                   TextButton(
-                    onPressed: () => Navigator.pushNamed(context, AppRoutes.login),
+                    onPressed:
+                        () => Navigator.pushNamed(context, AppRoutes.login),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.cream,
                     ).copyWith(
@@ -246,7 +265,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Text("Login", style: AppTextStyle.button),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),

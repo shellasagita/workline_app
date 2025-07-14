@@ -11,7 +11,7 @@ import 'package:workline_app/screens/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await PreferencesHelper.init();
+  // await PreferencesHelper.init();
   runApp(const MyApp());
 }
 
