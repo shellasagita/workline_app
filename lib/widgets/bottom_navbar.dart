@@ -4,6 +4,7 @@ import 'package:workline_app/constants/app_colors.dart';
 import 'package:workline_app/profile/profile_page.dart';
 import 'package:workline_app/screens/attendance/attendance_screen.dart';
 import 'package:workline_app/screens/home/home_screen.dart';
+import 'package:workline_app/screens/profile/profile_screen.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -23,7 +24,7 @@ class BottomNavBar extends StatelessWidget {
       case 1:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const ProfilePage()),
+          MaterialPageRoute(builder: (_) => const ProfileScreen()),
         );
         break;
       case 2:
