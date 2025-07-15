@@ -12,7 +12,7 @@ String TodayAttendanceResponseToJson(TodayAttendanceResponse data) =>
 
 class TodayAttendanceResponse {
   String? message;
-  TodayAbsenData? data;
+  TodayAttendanceData? data;
 
   TodayAttendanceResponse({this.message, this.data});
 
@@ -20,14 +20,14 @@ class TodayAttendanceResponse {
       TodayAttendanceResponse(
         message: json["message"],
         data: json["data"] != null
-            ? TodayAbsenData.fromJson(json["data"])
+            ? TodayAttendanceData.fromJson(json["data"])
             : null,
       );
 
   Map<String, dynamic> toJson() => {"message": message, "data": data?.toJson()};
 }
 
-class TodayAbsenData {
+class TodayAttendanceData {
   String? attendanceDate;
   String? checkInTime;
   String? checkOutTime;
@@ -36,7 +36,7 @@ class TodayAbsenData {
   String? status;
   String? alasanIzin;
 
-  TodayAbsenData({
+  TodayAttendanceData({
     this.attendanceDate,
     this.checkInTime,
     this.checkOutTime,
@@ -46,7 +46,7 @@ class TodayAbsenData {
     this.alasanIzin,
   });
 
-  factory TodayAbsenData.fromJson(Map<String, dynamic> json) => TodayAbsenData(
+  factory TodayAttendanceData.fromJson(Map<String, dynamic> json) => TodayAttendanceData(
     attendanceDate: json["attendance_date"],
     checkInTime: json["check_in_time"],
     checkOutTime: json["check_out_time"],

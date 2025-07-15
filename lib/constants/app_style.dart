@@ -9,6 +9,13 @@ class AppTextStyle {
     color: AppColors.darkBlue,
   );
 
+  // Added heading2 as used in HomeScreen for titles like "Attendance History"
+  static final TextStyle heading2 = GoogleFonts.raleway(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+    color: AppColors.darkBlue,
+  );
+
   static final TextStyle body = GoogleFonts.raleway(
     fontSize: 16,
     fontWeight: FontWeight.normal,
@@ -78,4 +85,3 @@ class AppSnackBar {
     );
   }
 }
-
