@@ -6,7 +6,7 @@ import 'package:intl/intl.dart'; // Import for date formatting
 import 'package:workline_app/api/attendence_service.dart';
 import 'package:workline_app/constants/app_colors.dart';
 import 'package:workline_app/constants/app_style.dart'; // Import AppTextStyle
-import 'package:workline_app/models/today_attendance_model.dart'; // Import today attendance model
+import 'package:workline_app/models/today_attendance_model.dart';
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -62,7 +62,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10) // Add a timeout for better UX
+        timeLimit: const Duration(seconds: 10), // Add a timeout for better UX
       );
 
       if (mounted) {
@@ -71,7 +71,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         });
       }
 
-      await _getAddressFromLatLng(position); // Get address after position is obtained
+      await _getAddressFromLatLng(
+        position,
+      ); // Get address after position is obtained
     } catch (e) {
       debugPrint("Error fetching location: $e"); // Use debugPrint
       if (mounted) {
@@ -107,9 +109,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               "${place.administrativeArea ?? ''}, ${place.country ?? ''}"; // Province, Country
 
           // Clean up multiple commas if some parts are null
-          _currentAddress = _currentAddress.replaceAll(RegExp(r',(\s*,)+'), ',').trim();
-          _currentAddress = _currentAddress.replaceAll(RegExp(r'^\s*,+'), '').trim();
-          _currentAddress = _currentAddress.replaceAll(RegExp(r',+\s*$'), '').trim();
+          _currentAddress =
+              _currentAddress.replaceAll(RegExp(r',(\s*,)+'), ',').trim();
+          _currentAddress =
+              _currentAddress.replaceAll(RegExp(r'^\s*,+'), '').trim();
+          _currentAddress =
+              _currentAddress.replaceAll(RegExp(r',+\s*$'), '').trim();
         });
       } else if (mounted) {
         setState(() {
@@ -176,9 +181,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           // Refresh today's attendance data to reflect the new check-in time
           _fetchTodayAttendance();
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Check-in berhasil!")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Check-in berhasil!")));
       }
     } catch (e) {
       debugPrint("Error during check-in: $e");
@@ -225,9 +230,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           // Refresh today's attendance data to reflect the new check-out time
           _fetchTodayAttendance();
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Check-out berhasil!")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Check-out berhasil!")));
       }
     } catch (e) {
       debugPrint("Error during check-out: $e");
@@ -247,23 +252,48 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     final today = DateTime.now();
-    final dayName = DateFormat('EEEE', 'id_ID').format(today); // Day name in Indonesian
-    final formattedDate = DateFormat('dd MMMM yyyy', 'id_ID').format(today); // Date in Indonesian
+    final dayName = DateFormat(
+      'EEEE',
+      'id_ID',
+    ).format(today); // Day name in Indonesian
+    final formattedDate = DateFormat(
+      'dd MMMM yyyy',
+      'id_ID',
+    ).format(today); // Date in Indonesian
 
-    final bool hasCheckedIn = _todayAttendanceData?.checkInTime != null && _todayAttendanceData!.checkInTime!.isNotEmpty;
-    final bool hasCheckedOut = _todayAttendanceData?.checkOutTime != null && _todayAttendanceData!.checkOutTime!.isNotEmpty;
+    final bool hasCheckedIn =
+        _todayAttendanceData?.checkInTime != null &&
+        _todayAttendanceData!.checkInTime!.isNotEmpty;
+    final bool hasCheckedOut =
+        _todayAttendanceData?.checkOutTime != null &&
+        _todayAttendanceData!.checkOutTime!.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.darkBlue), // Use app colors
-          onPressed: () => Navigator.of(context).pop(),
-                  ),
+        // leading: IconButton(
+        //   icon: const Icon(
+        //     Icons.arrow_back_ios,
+        //     color: AppColors.darkBlue,
+        //   ), // Use app colors
+        //   onPressed: () => Navigator.of(context).pop(),
+        // ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(dayName, style: AppTextStyle.heading2.copyWith(fontSize: 16, color: AppColors.darkBlue)),
-            Text(formattedDate, style: AppTextStyle.body.copyWith(fontSize: 14, color: AppColors.blueGray)),
+            Text(
+              dayName,
+              style: AppTextStyle.heading2.copyWith(
+                fontSize: 16,
+                color: AppColors.darkBlue,
+              ),
+            ),
+            Text(
+              formattedDate,
+              style: AppTextStyle.body.copyWith(
+                fontSize: 14,
+                color: AppColors.blueGray,
+              ),
+            ),
           ],
         ),
         centerTitle: true,
@@ -271,7 +301,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         elevation: 0,
       ),
       backgroundColor: AppColors.softGreen,
-      body: RefreshIndicator( // Added for pull-to-refresh
+
+      // bottomNavigationBar: const BottomNavBar(),
+      body: RefreshIndicator(
+        // Added for pull-to-refresh
         onRefresh: _loadInitialData,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -290,36 +323,53 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                 ],
               ),
-              child: _isLoadingLocation || _currentPosition == null
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const CircularProgressIndicator(color: AppColors.teal),
-                          const SizedBox(height: 10),
-                          Text(
-                            _isLoadingLocation ? "Mencari lokasi..." : "Lokasi tidak tersedia.",
-                            style: AppTextStyle.body.copyWith(color: AppColors.blueGray),
-                          ),
-                        ],
-                      ),
-                    )
-                  : GoogleMap(
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                        zoom: 17,
-                      ),
-                      markers: {
-                        Marker(
-                          markerId: const MarkerId("current_location"),
-                          position: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                          infoWindow: InfoWindow(title: "Lokasi Anda", snippet: _currentAddress),
+              child:
+                  _isLoadingLocation || _currentPosition == null
+                      ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const CircularProgressIndicator(
+                              color: AppColors.teal,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              _isLoadingLocation
+                                  ? "Mencari lokasi..."
+                                  : "Lokasi tidak tersedia.",
+                              style: AppTextStyle.body.copyWith(
+                                color: AppColors.blueGray,
+                              ),
+                            ),
+                          ],
                         ),
-                      },
-                      zoomControlsEnabled: false,
-                      myLocationButtonEnabled: false, // You might want to enable this
-                      myLocationEnabled: true,
-                    ),
+                      )
+                      : GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(
+                            _currentPosition!.latitude,
+                            _currentPosition!.longitude,
+                          ),
+                          zoom: 17,
+                        ),
+                        markers: {
+                          Marker(
+                            markerId: const MarkerId("current_location"),
+                            position: LatLng(
+                              _currentPosition!.latitude,
+                              _currentPosition!.longitude,
+                            ),
+                            infoWindow: InfoWindow(
+                              title: "Lokasi Anda",
+                              snippet: _currentAddress,
+                            ),
+                          ),
+                        },
+                        zoomControlsEnabled: false,
+                        myLocationButtonEnabled:
+                            false, // You might want to enable this
+                        myLocationEnabled: true,
+                      ),
             ),
             const SizedBox(height: 20),
 
@@ -344,38 +394,47 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
             // --- Check In / Check Out Button ---
             ElevatedButton.icon(
-              onPressed: _isProcessingAttendance || _isLoadingLocation || _currentPosition == null || _currentAddress.isEmpty || _currentAddress == "Mencari lokasi..."
-                  ? null // Disable if loading location or processing attendance or no location
-                  : hasCheckedOut // If already checked out, button is disabled
+              onPressed:
+                  _isProcessingAttendance ||
+                          _isLoadingLocation ||
+                          _currentPosition == null ||
+                          _currentAddress.isEmpty ||
+                          _currentAddress == "Mencari lokasi..."
+                      ? null // Disable if loading location or processing attendance or no location
+                      : hasCheckedOut // If already checked out, button is disabled
                       ? null
                       : hasCheckedIn
-                          ? _handleCheckOut
-                          : _handleCheckIn,
-              icon: _isProcessingAttendance
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : Icon(hasCheckedIn ? Icons.logout : Icons.login),
+                      ? _handleCheckOut
+                      : _handleCheckIn,
+              icon:
+                  _isProcessingAttendance
+                      ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                      : Icon(hasCheckedIn ? Icons.logout : Icons.login),
               label: Text(
                 _isProcessingAttendance
                     ? "Memproses..."
                     : hasCheckedOut
-                        ? "Sudah Check Out"
-                        : hasCheckedIn
-                            ? "Check Out"
-                            : "Check In",
+                    ? "Sudah Check Out"
+                    : hasCheckedIn
+                    ? "Check Out"
+                    : "Check In",
                 style: AppTextStyle.button.copyWith(color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: hasCheckedOut
-                    ? AppColors.blueGray // Grey out if already checked out
-                    : hasCheckedIn
-                        ? AppColors.red // Red for Check Out
+                backgroundColor:
+                    hasCheckedOut
+                        ? AppColors
+                            .blueGray // Grey out if already checked out
+                        : hasCheckedIn
+                        ? AppColors
+                            .red // Red for Check Out
                         : AppColors.teal, // Teal for Check In
                 minimumSize: const Size.fromHeight(56),
                 shape: RoundedRectangleBorder(
@@ -396,9 +455,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget _buildLocationInfoCard() {
     return Card(
       color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -411,14 +468,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 const SizedBox(width: 12),
                 Text(
                   "Alamat Lokasi Anda",
-                  style: AppTextStyle.heading2.copyWith(color: AppColors.darkBlue, fontSize: 16),
+                  style: AppTextStyle.heading2.copyWith(
+                    color: AppColors.darkBlue,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             Text(
               _currentAddress,
-              style: AppTextStyle.body.copyWith(fontSize: 14, color: AppColors.blueGray),
+              style: AppTextStyle.body.copyWith(
+                fontSize: 14,
+                color: AppColors.blueGray,
+              ),
             ),
             const SizedBox(height: 12),
             const Divider(color: AppColors.blueGray),
@@ -429,18 +492,27 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 const SizedBox(width: 12),
                 Text(
                   "Titik Koordinat GPS",
-                  style: AppTextStyle.heading2.copyWith(color: AppColors.darkBlue, fontSize: 16),
+                  style: AppTextStyle.heading2.copyWith(
+                    color: AppColors.darkBlue,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             Text(
               "Latitude: ${_currentPosition?.latitude.toStringAsFixed(6) ?? 'N/A'}",
-              style: AppTextStyle.body.copyWith(fontSize: 14, color: AppColors.blueGray),
+              style: AppTextStyle.body.copyWith(
+                fontSize: 14,
+                color: AppColors.blueGray,
+              ),
             ),
             Text(
               "Longitude: ${_currentPosition?.longitude.toStringAsFixed(6) ?? 'N/A'}",
-              style: AppTextStyle.body.copyWith(fontSize: 14, color: AppColors.blueGray),
+              style: AppTextStyle.body.copyWith(
+                fontSize: 14,
+                color: AppColors.blueGray,
+              ),
             ),
           ],
         ),
@@ -465,9 +537,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     return Card(
       color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -476,7 +546,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           children: [
             Text(
               "Status Kehadiran Hari Ini",
-              style: AppTextStyle.heading2.copyWith(color: AppColors.darkBlue, fontSize: 16),
+              style: AppTextStyle.heading2.copyWith(
+                color: AppColors.darkBlue,
+                fontSize: 16,
+              ),
             ),
             const SizedBox(height: 12),
             Row(
@@ -486,11 +559,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Check In", style: AppTextStyle.body.copyWith(color: AppColors.blueGray)),
+                    Text(
+                      "Check In",
+                      style: AppTextStyle.body.copyWith(
+                        color: AppColors.blueGray,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       _todayAttendanceData?.checkInTime ?? '-',
-                      style: AppTextStyle.heading1.copyWith(color: AppColors.teal, fontSize: 20),
+                      style: AppTextStyle.heading1.copyWith(
+                        color: AppColors.teal,
+                        fontSize: 20,
+                      ),
                     ),
                   ],
                 ),
@@ -498,11 +579,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text("Check Out", style: AppTextStyle.body.copyWith(color: AppColors.blueGray)),
+                    Text(
+                      "Check Out",
+                      style: AppTextStyle.body.copyWith(
+                        color: AppColors.blueGray,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       _todayAttendanceData?.checkOutTime ?? '-',
-                      style: AppTextStyle.heading1.copyWith(color: AppColors.red, fontSize: 20),
+                      style: AppTextStyle.heading1.copyWith(
+                        color: AppColors.red,
+                        fontSize: 20,
+                      ),
                     ),
                   ],
                 ),
@@ -512,7 +601,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             Align(
               alignment: Alignment.center,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: statusColor.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(20),

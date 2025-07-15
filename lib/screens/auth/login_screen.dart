@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:workline_app/api/user_api.dart';
 import 'package:workline_app/constants/app_colors.dart';
 import 'package:workline_app/constants/app_style.dart';
-import 'package:workline_app/api/user_api.dart';
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,12 +17,16 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
 
   bool _isValidEmail(String email) {
-    final emailRegex = RegExp(r'^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$');
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
+    );
     return emailRegex.hasMatch(email);
   }
 
   bool _isStrongPassword(String password) {
-    final regex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#\$&*~]).{8,}\$');
+    final regex = RegExp(
+      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#\$&*~]).{8,}\$',
+    );
     return regex.hasMatch(password);
   }
 
@@ -39,9 +42,9 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (!_isValidEmail(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        AppSnackBar.error("Please enter a valid email address."),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(AppSnackBar.error("Please enter a valid email address."));
       return;
     }
 
@@ -64,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (success) {
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/main');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         AppSnackBar.error("Login failed. Please check your credentials."),
@@ -97,10 +100,15 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-                Text("Welcome Back", style: AppTextStyle.heading1.copyWith(color: Colors.white)),
+                Text(
+                  "Welcome Back",
+                  style: AppTextStyle.heading1.copyWith(color: Colors.white),
+                ),
                 const SizedBox(height: 8),
-                Text("Login to your account",
-                    style: AppTextStyle.body.copyWith(color: Colors.white70)),
+                Text(
+                  "Login to your account",
+                  style: AppTextStyle.body.copyWith(color: Colors.white70),
+                ),
                 const SizedBox(height: 30),
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -121,14 +129,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
-                        decoration: AppInputStyle.textField('Password').copyWith(
+                        decoration: AppInputStyle.textField(
+                          'Password',
+                        ).copyWith(
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                               color: AppColors.darkBlue,
                             ),
-                            onPressed: () =>
-                                setState(() => _obscurePassword = !_obscurePassword),
+                            onPressed:
+                                () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
                           ),
                         ),
                         cursorColor: AppColors.teal,
@@ -138,21 +152,34 @@ class _LoginScreenState extends State<LoginScreen> {
                       Row(
                         children: [
                           Checkbox(
-                          
                             value: _rememberMe,
                             onChanged: (value) {
                               setState(() => _rememberMe = value!);
-                            }, checkColor: Colors.white, //warna centangnya
-                            activeColor: AppColors.teal // warna kotak saat dicentang
+                            },
+                            checkColor: Colors.white, //warna centangnya
+                            activeColor:
+                                AppColors.teal, // warna kotak saat dicentang
                           ),
-                           Text("Remember me", style: AppTextStyle.body.copyWith(color: Colors.black)),
+                          Text(
+                            "Remember me",
+                            style: AppTextStyle.body.copyWith(
+                              color: Colors.black,
+                            ),
+                          ),
                           const Spacer(),
                           TextButton(
                             onPressed: () {},
                             style: ButtonStyle(
-    overlayColor: MaterialStateProperty.all(AppColors.teal.withOpacity(0.1)), // warna saat diklik
-  ),
-                            child:  Text("Forgot Password", style: AppTextStyle.button.copyWith(color: Colors.black)),
+                              overlayColor: WidgetStateProperty.all(
+                                AppColors.teal.withOpacity(0.1),
+                              ), // warna saat diklik
+                            ),
+                            child: Text(
+                              "Forgot Password",
+                              style: AppTextStyle.button.copyWith(
+                                color: Colors.black,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -165,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.teal,
                           ),
-                          child:  Text("Login", style: AppTextStyle.button),
+                          child: Text("Login", style: AppTextStyle.button),
                         ),
                       ),
                     ],
@@ -175,25 +202,29 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                     Text("Don't have an account? ", style: AppTextStyle.body.copyWith(color: Colors.white70)),
+                    Text(
+                      "Don't have an account? ",
+                      style: AppTextStyle.body.copyWith(color: Colors.white70),
+                    ),
                     TextButton(
-  onPressed: () {
-    Navigator.pushNamed(context, '/register');
-  },
-  style: TextButton.styleFrom(
-    foregroundColor: AppColors.cream,
-  ).copyWith(
-    overlayColor: MaterialStateProperty.all(AppColors.cream.withOpacity(0.1)),
-  ),
-  child: Text("Sign Up", style: AppTextStyle.button),
-)
-
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/register');
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.cream,
+                      ).copyWith(
+                        overlayColor: WidgetStateProperty.all(
+                          AppColors.cream.withOpacity(0.1),
+                        ),
+                      ),
+                      child: Text("Sign Up", style: AppTextStyle.button),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-        ),                 
+        ),
       ),
     );
   }

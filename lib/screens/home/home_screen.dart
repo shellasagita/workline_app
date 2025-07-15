@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart'; // Required for address from coordinates
+import 'package:geolocator/geolocator.dart'; // Required for location
+import 'package:intl/intl.dart';
 import 'package:workline_app/api/attendence_service.dart';
 import 'package:workline_app/constants/app_colors.dart';
 import 'package:workline_app/constants/app_style.dart';
@@ -7,10 +10,6 @@ import 'package:workline_app/models/login_response.dart';
 import 'package:workline_app/models/today_attendance_model.dart';
 import 'package:workline_app/preferences/preferences_helper.dart';
 import 'package:workline_app/screens/home/detail_page.dart'; // Assuming DetailPage is your DetailScreen
-import 'package:workline_app/widgets/bottom_navbar.dart';
-import 'package:intl/intl.dart';
-import 'package:geolocator/geolocator.dart'; // Required for location
-import 'package:geocoding/geocoding.dart'; // Required for address from coordinates
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,13 +33,16 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadUserData();
     _futureHistory = AttendanceService.fetchAttendanceHistory();
-    _futureToday = AttendanceService.fetchTodayAttendance(DateFormat('yyyy-MM-dd').format(DateTime.now()));
+    _futureToday = AttendanceService.fetchTodayAttendance(
+      DateFormat('yyyy-MM-dd').format(DateTime.now()),
+    );
     _fetchCurrentLocation();
   }
 
   Future<void> _loadUserData() async {
     final user = await PreferencesHelper.getUser();
-    if (mounted) { // Check if widget is still mounted before calling setState
+    if (mounted) {
+      // Check if widget is still mounted before calling setState
       setState(() {
         _currentUser = user;
       });
@@ -72,7 +74,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
           setState(() {
-            _currentLocationAddress = 'Location permissions are permanently denied.';
+            _currentLocationAddress =
+                'Location permissions are permanently denied.';
             _isLoadingLocation = false;
           });
         }
@@ -88,7 +91,8 @@ class _HomeScreenState extends State<HomeScreen> {
         position.longitude,
       );
 
-      if (mounted) { // Check mounted before setState
+      if (mounted) {
+        // Check mounted before setState
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks.first;
           setState(() {
@@ -107,8 +111,11 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       // Avoid print in production, use a logging framework
-      debugPrint("Error fetching location: $e"); // Use debugPrint for development
-      if (mounted) { // Check mounted before setState
+      debugPrint(
+        "Error fetching location: $e",
+      ); // Use debugPrint for development
+      if (mounted) {
+        // Check mounted before setState
         setState(() {
           _currentLocationAddress = 'Error fetching location: $e';
           _isLoadingLocation = false;
@@ -150,9 +157,9 @@ class _HomeScreenState extends State<HomeScreen> {
         address: _currentLocationAddress, // Optional, depending on your API
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Check-in successful!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Check-in successful!')));
       }
       _refreshData();
     } catch (e) {
@@ -195,9 +202,9 @@ class _HomeScreenState extends State<HomeScreen> {
         address: _currentLocationAddress, // Optional, depending on your API
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Check-out successful!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Check-out successful!')));
       }
       _refreshData();
     } catch (e) {
@@ -220,7 +227,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _futureHistory = AttendanceService.fetchAttendanceHistory();
-      _futureToday = AttendanceService.fetchTodayAttendance(DateFormat('yyyy-MM-dd').format(DateTime.now()));
+      _futureToday = AttendanceService.fetchTodayAttendance(
+        DateFormat('yyyy-MM-dd').format(DateTime.now()),
+      );
       _loadUserData();
       _fetchCurrentLocation(); // Re-fetch location on refresh
     });
@@ -230,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.softGreen,
-      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
+      // bottomNavigationBar: const BottomNavBar(),
       body: RefreshIndicator(
         onRefresh: _refreshData,
         child: SafeArea(
@@ -328,14 +337,20 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: BoxDecoration(
               color: AppColors.lightGrey,
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: AppColors.greyShadow, blurRadius: 4)],
+              boxShadow: [
+                BoxShadow(color: AppColors.greyShadow, blurRadius: 4),
+              ],
             ),
             height: 100,
-            child: const Center(child: CircularProgressIndicator(color: AppColors.teal)),
+            child: const Center(
+              child: CircularProgressIndicator(color: AppColors.teal),
+            ),
           );
         }
 
-        if (snapshot.hasError || !snapshot.hasData || snapshot.data?.data == null) {
+        if (snapshot.hasError ||
+            !snapshot.hasData ||
+            snapshot.data?.data == null) {
           return _renderCheckInOutBox('-', '-');
         }
 
@@ -379,12 +394,18 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Text(
           label,
-          style: AppTextStyle.body.copyWith(fontSize: 14, color: AppColors.blueGray),
+          style: AppTextStyle.body.copyWith(
+            fontSize: 14,
+            color: AppColors.blueGray,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           time,
-          style: AppTextStyle.heading2.copyWith(fontSize: 18, color: AppColors.darkBlue),
+          style: AppTextStyle.heading2.copyWith(
+            fontSize: 18,
+            color: AppColors.darkBlue,
+          ),
         ),
       ],
     );
@@ -397,9 +418,10 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Expanded(
           child: ElevatedButton(
-            onPressed: _isChecking || _isLoadingLocation || _currentLatitude == null
-                ? null
-                : _handleCheckIn, // Disable if location not ready
+            onPressed:
+                _isChecking || _isLoadingLocation || _currentLatitude == null
+                    ? null
+                    : _handleCheckIn, // Disable if location not ready
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.teal,
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -407,20 +429,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: _isChecking
-                ? const CircularProgressIndicator(color: Colors.white)
-                : Text(
-                    'Check In',
-                    style: AppTextStyle.button.copyWith(color: Colors.white),
-                  ),
+            child:
+                _isChecking
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                      'Check In',
+                      style: AppTextStyle.button.copyWith(color: Colors.white),
+                    ),
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
           child: ElevatedButton(
-            onPressed: _isChecking || _isLoadingLocation || _currentLatitude == null
-                ? null
-                : _handleCheckOut, // Disable if location not ready
+            onPressed:
+                _isChecking || _isLoadingLocation || _currentLatitude == null
+                    ? null
+                    : _handleCheckOut, // Disable if location not ready
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.red, // Or another appropriate color
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -428,12 +452,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: _isChecking
-                ? const CircularProgressIndicator(color: Colors.white)
-                : Text(
-                    'Check Out',
-                    style: AppTextStyle.button.copyWith(color: Colors.white),
-                  ),
+            child:
+                _isChecking
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                      'Check Out',
+                      style: AppTextStyle.button.copyWith(color: Colors.white),
+                    ),
           ),
         ),
       ],
@@ -450,16 +475,15 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: BoxDecoration(
               color: AppColors.lightGrey,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: AppColors.greyShadow, blurRadius: 4)],
+              boxShadow: [
+                BoxShadow(color: AppColors.greyShadow, blurRadius: 4),
+              ],
             ),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.directions_walk,
-                    color: AppColors.orange,
-                  ),
+                  const Icon(Icons.directions_walk, color: AppColors.orange),
                   const SizedBox(height: 8),
                   Text(
                     _getDistanceToOffice(),
@@ -488,10 +512,12 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: AppColors.lightGrey,
-              boxShadow: [BoxShadow(color: AppColors.greyShadow, blurRadius: 4)], // FIX: Corrected typo 'box boxShadow'
+              boxShadow: [
+                BoxShadow(color: AppColors.greyShadow, blurRadius: 4),
+              ], // FIX: Corrected typo 'box boxShadow'
               image: const DecorationImage(
                 image: NetworkImage(
-                  'https://via.placeholder.com/200x100?text=Map+View'
+                  'https://via.placeholder.com/200x100?text=Map+View',
                 ),
                 fit: BoxFit.cover,
               ),
@@ -534,7 +560,9 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const DetailScreen()), // Navigating to DetailScreen
+              MaterialPageRoute(
+                builder: (context) => const DetailScreen(),
+              ), // Navigating to DetailScreen
             );
           },
           child: Text(
@@ -552,7 +580,9 @@ class _HomeScreenState extends State<HomeScreen> {
       future: _futureHistory,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: AppColors.teal));
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.teal),
+          );
         }
 
         if (snapshot.hasError) {
@@ -607,11 +637,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     'Check In: ${data.checkInTime ?? '-'}',
-                    style: AppTextStyle.body.copyWith(color: AppColors.darkBlue, fontSize: 13),
+                    style: AppTextStyle.body.copyWith(
+                      color: AppColors.darkBlue,
+                      fontSize: 13,
+                    ),
                   ),
                   Text(
                     'Check Out: ${data.checkOutTime ?? '-'}',
-                    style: AppTextStyle.body.copyWith(color: AppColors.darkBlue, fontSize: 13),
+                    style: AppTextStyle.body.copyWith(
+                      color: AppColors.darkBlue,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),

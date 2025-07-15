@@ -1,62 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:workline_app/constants/app_colors.dart';
-import 'package:workline_app/profile/profile_page.dart';
 import 'package:workline_app/screens/attendance/attendance_screen.dart';
 import 'package:workline_app/screens/home/home_screen.dart';
 import 'package:workline_app/screens/profile/profile_screen.dart';
 
-class BottomNavBar extends StatelessWidget {
-  final int currentIndex;
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+  static const id = '/bottom-navbar';
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
 
-  const BottomNavBar({super.key, required this.currentIndex});
+class _MainScreenState extends State<MainScreen> {
+  int _currentIndex = 0;
 
-  void _onTabTapped(BuildContext context, int index) {
-    if (index == currentIndex) return;
-
-    switch (index) {
+  Widget _buildBody() {
+    switch (_currentIndex) {
       case 0:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-        break;
+        return const HomeScreen(); // Ini akan rebuild setiap switch tab
       case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const ProfileScreen()),
-        );
-        break;
+        return const ProfileScreen();
       case 2:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const AttendanceScreen()),
-        );
-        break;
+        return const AttendanceScreen();
+      default:
+        return const Center(child: Text('Halaman tidak ditemukan'));
     }
+  }
+
+  void _onTabTapped(int index) {
+    if (index == _currentIndex) return;
+    setState(() {
+      _currentIndex = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      backgroundColor: AppColors.softGreen,
-      selectedItemColor: AppColors.cream,
-      unselectedItemColor: Colors.grey,
-      currentIndex: currentIndex,
-      onTap: (index) => _onTabTapped(context, index),
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          label: 'Profile',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today_outlined),
-          label: 'Kehadiran',
-        ),
-      ],
-      selectedLabelStyle: GoogleFonts.lexend(fontWeight: FontWeight.w600),
-      unselectedLabelStyle: GoogleFonts.lexend(),
+    return Scaffold(
+      body: _buildBody(), // Render ulang berdasarkan index
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: AppColors.softGreen,
+        selectedItemColor: AppColors.cream,
+        unselectedItemColor: Colors.grey,
+        currentIndex: _currentIndex,
+        onTap: _onTabTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today_outlined),
+            label: 'Kehadiran',
+          ),
+        ],
+        selectedLabelStyle: GoogleFonts.lexend(fontWeight: FontWeight.w600),
+        unselectedLabelStyle: GoogleFonts.lexend(),
+      ),
     );
   }
 }
