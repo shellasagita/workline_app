@@ -37,4 +37,6 @@ class PreferencesHelper {
   }
 
   static saveUser(User user) {}
+
+  static Future getUser() async {}
 }

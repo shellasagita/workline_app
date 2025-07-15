@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:workline_app/screens/attendance/attendance_screen.dart';
 import 'package:workline_app/screens/auth/forgot_password_screen.dart';
 import 'package:workline_app/screens/auth/login_screen.dart';
 import 'package:workline_app/screens/auth/register_screen.dart';
@@ -21,6 +22,8 @@ class AppRoutes {
   static const String home = '/home';
   static const String forgot = '/forgot-password';
   static const String reset = '/reset-password';
+  static const String attendance = '/attendance';
+
 
   static const String profile = '/profile';
   static const String editProfile = '/edit-profile';
@@ -35,6 +38,8 @@ class AppRoutes {
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
     home: (context) => const HomeScreen(),
+    attendance: (context) => const AttendanceScreen(),
+
     forgot: (context) => const ForgotPasswordScreen(),
 
     reset: (context) {

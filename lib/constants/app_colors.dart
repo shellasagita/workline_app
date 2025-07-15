@@ -12,6 +12,10 @@ class AppColors {
   static const Color darkBlue = Color(0xFF153462);
 
   static const Color success = Color(0xFF4FA095); // teal-green for success
-  static const Color error = Color(0xFFC96868);   // red for error
+  static const Color error = Color(0xFFC96868); // red for error
 
+  // Correct and unique definition for lightGrey, greyShadow, and orange
+  static const Color lightGrey = Color(0xFFF5F5F5);
+  static const Color greyShadow = Color(0x33BDBDBD);
+  static const Color orange = Color(0xFFFB8C00);
 }
