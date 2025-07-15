@@ -20,9 +20,11 @@ class _MainScreenState extends State<MainScreen> {
       case 0:
         return const HomeScreen(); // Ini akan rebuild setiap switch tab
       case 1:
-        return const ProfileScreen();
-      case 2:
         return const AttendanceScreen();
+
+      case 2:
+        return const ProfileScreen();
+
       default:
         return const Center(child: Text('Halaman tidak ditemukan'));
     }
@@ -51,12 +53,12 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
             label: 'Kehadiran',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
           ),
         ],
         selectedLabelStyle: GoogleFonts.lexend(fontWeight: FontWeight.w600),
