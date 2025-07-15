@@ -7,6 +7,7 @@ import 'package:workline_app/screens/auth/reset_password_screen.dart';
 import 'package:workline_app/screens/home/home_screen.dart';
 import 'package:workline_app/screens/splash/intro_screen.dart';
 import 'package:workline_app/screens/splash/splash_screen.dart';
+import 'package:workline_app/widgets/bottom_navbar.dart';
 // import 'package:workline_app/screens/profile/profile_screen.dart';
 // import 'package:workline_app/screens/profile/edit_profile_screen.dart';
 // import 'package:workline_app/screens/history/history_screen.dart';
@@ -23,7 +24,7 @@ class AppRoutes {
   static const String forgot = '/forgot-password';
   static const String reset = '/reset-password';
   static const String attendance = '/attendance';
-
+  static const String main = '/main';
 
   static const String profile = '/profile';
   static const String editProfile = '/edit-profile';
@@ -39,6 +40,7 @@ class AppRoutes {
     register: (context) => const RegisterScreen(),
     home: (context) => const HomeScreen(),
     attendance: (context) => const AttendanceScreen(),
+    main: (context) => const MainScreen(),
 
     forgot: (context) => const ForgotPasswordScreen(),
 
