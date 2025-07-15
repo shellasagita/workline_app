@@ -3,10 +3,13 @@ import 'package:geocoding/geocoding.dart'; // Required for address from coordina
 import 'package:geolocator/geolocator.dart'; // Required for location
 import 'package:intl/intl.dart';
 import 'package:workline_app/api/attendence_service.dart';
+import 'package:workline_app/api/profile_service.dart';
 import 'package:workline_app/constants/app_colors.dart';
 import 'package:workline_app/constants/app_style.dart';
 import 'package:workline_app/models/history_model.dart';
 import 'package:workline_app/models/login_response.dart';
+import 'package:workline_app/models/profile_model.dart';
+import 'package:workline_app/models/statatistic_attendance_model.dart';
 import 'package:workline_app/models/today_attendance_model.dart';
 import 'package:workline_app/preferences/preferences_helper.dart';
 import 'package:workline_app/screens/home/detail_page.dart'; // Assuming DetailPage is your DetailScreen
@@ -21,12 +24,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Future<List<HistoryData>> _futureHistory;
   late Future<TodayAttendanceResponse> _futureToday;
+  late Future<StatisticAttendanceResponse> _futureStats;
   User? _currentUser;
   String _currentLocationAddress = 'Fetching location...';
   double? _currentLatitude; // Changed to double?
   double? _currentLongitude; // Changed to double?
   bool _isLoadingLocation = false;
   bool _isChecking = false;
+  DateTime? _selectedDate;
+  final TextEditingController _alasanController = TextEditingController();
 
   @override
   void initState() {
@@ -36,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _futureToday = AttendanceService.fetchTodayAttendance(
       DateFormat('yyyy-MM-dd').format(DateTime.now()),
     );
+    _futureStats = AttendanceService.fetchStats();
     _fetchCurrentLocation();
   }
 
@@ -230,6 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _futureToday = AttendanceService.fetchTodayAttendance(
         DateFormat('yyyy-MM-dd').format(DateTime.now()),
       );
+      _futureStats = AttendanceService.fetchStats();
       _loadUserData();
       _fetchCurrentLocation(); // Re-fetch location on refresh
     });
@@ -254,9 +262,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 20),
                 _buildCheckInOutBox(),
                 const SizedBox(height: 20),
-                _buildActionButtons(),
+                _buildStatisticBox(),
                 const SizedBox(height: 20),
-                _buildDistanceAndMap(),
+                _buildIzinForm(),
+                // const SizedBox(height: 20),
+                // _buildActionButtons(),
+                // const SizedBox(height: 20),
+                // _buildDistanceAndMap(),
                 const SizedBox(height: 24),
                 _buildHistoryHeader(),
                 _buildAttendanceHistory(),
@@ -265,6 +277,228 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _handleAjukanIzin() async {
+    if (_selectedDate == null || _alasanController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mohon isi tanggal dan alasan izin.')),
+      );
+      return;
+    }
+
+    try {
+      await AttendanceService.ajukanIzin(
+        date: DateFormat('yyyy-MM-dd').format(_selectedDate!),
+        alasan: _alasanController.text.trim(),
+      );
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Izin berhasil diajukan.')));
+
+      // Reset form
+      setState(() {
+        _selectedDate = null;
+        _alasanController.clear();
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengajukan izin: ${e.toString()}')),
+      );
+    }
+  }
+
+  Widget _buildIzinForm() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.lightGrey,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: AppColors.greyShadow, blurRadius: 4)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Form Izin Tidak Hadir",
+            style: AppTextStyle.heading2.copyWith(
+              fontSize: 16,
+              color: AppColors.darkBlue,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextButton.icon(
+            onPressed: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime.now().subtract(const Duration(days: 30)),
+                lastDate: DateTime.now().add(const Duration(days: 30)),
+              );
+              if (picked != null) {
+                setState(() {
+                  _selectedDate = picked;
+                });
+              }
+            },
+            icon: const Icon(Icons.date_range, color: AppColors.teal),
+            label: Text(
+              _selectedDate == null
+                  ? "Pilih Tanggal"
+                  : DateFormat(
+                    'EEEE, dd MMMM yyyy',
+                    'id_ID',
+                  ).format(_selectedDate!),
+              style: AppTextStyle.body.copyWith(
+                color: AppColors.blueGray,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _alasanController,
+            maxLines: 3,
+            decoration: InputDecoration(
+              hintText: "Tuliskan alasan izin...",
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _handleAjukanIzin,
+              icon: const Icon(Icons.send),
+              label: const Text("Ajukan Izin"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.teal,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatisticBox() {
+    return FutureBuilder<StatisticAttendanceResponse>(
+      future: _futureStats,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.lightGrey,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(color: AppColors.teal),
+            ),
+          );
+        }
+
+        if (snapshot.hasError ||
+            !snapshot.hasData ||
+            snapshot.data?.data == null) {
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.lightGrey,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Center(
+              child: Text(
+                "Gagal memuat statistik.",
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          );
+        }
+
+        final data = snapshot.data!.data;
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.lightGrey,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: AppColors.greyShadow, blurRadius: 4)],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Statistik Absensi",
+                style: AppTextStyle.heading2.copyWith(
+                  fontSize: 16,
+                  color: AppColors.darkBlue,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _statItem("Total Absen", data.totalAbsen.toString()),
+                  _statItem("Masuk", data.totalMasuk.toString()),
+                  _statItem("Izin", data.totalIzin.toString()),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.today, color: AppColors.teal),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      data.sudahAbsenHariIni
+                          ? "Anda sudah absen hari ini."
+                          : "Anda belum absen hari ini.",
+                      style: AppTextStyle.body.copyWith(
+                        color:
+                            data.sudahAbsenHariIni
+                                ? AppColors.teal
+                                : AppColors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _statItem(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: AppTextStyle.heading2.copyWith(
+            fontSize: 20,
+            color: AppColors.darkBlue,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: AppTextStyle.body.copyWith(color: AppColors.blueGray),
+        ),
+      ],
     );
   }
 
@@ -291,12 +525,26 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          _currentUser?.name ?? 'Your Name',
-          style: AppTextStyle.body.copyWith(
-            fontSize: 16,
-            color: AppColors.darkBlue,
-          ),
+        FutureBuilder<ProfileData>(
+          future: ProfileService.fetchProfile(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return Text(
+                snapshot.data!.name ?? 'User',
+                style: AppTextStyle.body.copyWith(
+                  fontSize: 16,
+                  color: AppColors.darkBlue,
+                ),
+              );
+            } else {
+              return SizedBox(
+                height: 16,
+                child: Center(
+                  child: CircularProgressIndicator(color: AppColors.teal),
+                ),
+              );
+            }
+          },
         ),
       ],
     );

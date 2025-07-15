@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -47,7 +46,7 @@ class _ProfilePageState extends State<ProfileScreen> {
 
   Future<void> _pickAndUploadPhoto(ProfileData profile) async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
+    final picked = await picker.pickImage(source: ImageSource.camera);
     if (picked == null) return;
 
     final token = await PreferencesHelper.getToken();
@@ -86,7 +85,7 @@ class _ProfilePageState extends State<ProfileScreen> {
   }
 
   Future<void> _editNameDialog(ProfileData profile) async {
-    String newName = profile.name;
+    String newName = profile.name ?? "-";
 
     showDialog(
       context: context,
@@ -175,58 +174,56 @@ class _ProfilePageState extends State<ProfileScreen> {
                       backgroundColor: AppColors.paleYellow,
                       backgroundImage:
                           profile.profilePhoto != null
-                              ? NetworkImage(
-                                profile.profilePhoto.startsWith("http")
-                                    ? profile.profilePhoto
-                                    : "https://appabsensi.mobileprojp.com/public/${profile.profilePhoto}",
-                              )
+                              ? NetworkImage(profile.profilePhotoUrl ?? "")
                               : null,
                       child:
                           profile.profilePhoto == null
                               ? const Icon(Icons.person, size: 48)
                               : null,
                     ),
-                    // Positioned(
-                    //   bottom: 0,
-                    //   right: 0,
-                    //   child: InkWell(
-                    //     onTap: _isUploadingPhoto
-                    //         ? null
-                    //         => _pickAndUploadPhoto(profile),
-                    //     child: CircleAvatar(
-                    //       radius: 16,
-                    //       backgroundColor: AppColors.success,
-                    //       child: _isUploadingPhoto
-                    //           ? const SizedBox(
-                    //               height: 16,
-                    //               width: 16,
-                    //               child: CircularProgressIndicator(
-                    //                 strokeWidth: 2,
-                    //                 color: Colors.white,
-                    //               ),
-                    //             )
-                    //           : const Icon(Icons.camera_alt, size: 18),
-                    //     ),
-                    //   ),
-                    // ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: InkWell(
+                        onTap:
+                            _isUploadingPhoto
+                                ? null
+                                : () => _pickAndUploadPhoto(profile),
+                        child: CircleAvatar(
+                          radius: 16,
+                          backgroundColor: AppColors.success,
+                          child:
+                              _isUploadingPhoto
+                                  ? const SizedBox(
+                                    height: 16,
+                                    width: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                  : const Icon(Icons.camera_alt, size: 18),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
               Center(
                 child: Text(
-                  profile.name,
+                  profile.name ?? "-",
                   style: GoogleFonts.lexend(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              Center(child: Text(profile.email)),
+              Center(child: Text(profile.email ?? "-")),
               const Divider(height: 32),
 
               _infoTile(Icons.badge, "Batch", "Batch ${profile.batchKe}"),
-              _infoTile(Icons.school, "Training", profile.trainingTitle),
+              _infoTile(Icons.school, "Training", profile.trainingTitle ?? "-"),
               _infoTile(Icons.wc, "Gender", _genderLabel(profile.jenisKelamin)),
 
               const SizedBox(height: 20),

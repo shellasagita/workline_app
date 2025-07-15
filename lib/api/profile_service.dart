@@ -33,7 +33,7 @@ class ProfileService {
     required String token,
     required String name,
   }) async {
-    final url = Uri.parse('${Endpoint.baseUrl}/profile/update');
+    final url = Uri.parse('${Endpoint.baseUrl}/profile');
 
     try {
       final response = await http.put(
@@ -45,9 +45,9 @@ class ProfileService {
         },
         body: jsonEncode({"name": name}),
       );
-
+      print("Data Update name${response.body}");
       final data = jsonDecode(response.body);
-      if (response.statusCode == 200 && data['data'] != null) {
+      if (response.statusCode == 200) {
         return ProfileData.fromJson(data['data']);
       } else {
         throw Exception(data['message'] ?? 'Failed to update profile name');
@@ -62,10 +62,10 @@ class ProfileService {
     required String token,
     required String base64Image,
   }) async {
-    final url = Uri.parse('${Endpoint.baseUrl}/profile/upload-photo');
+    final url = Uri.parse('${Endpoint.baseUrl}/profile/photo');
 
     try {
-      final response = await http.post(
+      final response = await http.put(
         url,
         headers: {
           'Accept': 'application/json',
