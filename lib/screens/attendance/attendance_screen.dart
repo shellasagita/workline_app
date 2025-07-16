@@ -7,6 +7,7 @@ import 'package:workline_app/api/attendence_service.dart';
 import 'package:workline_app/constants/app_colors.dart';
 import 'package:workline_app/constants/app_style.dart'; // Import AppTextStyle
 import 'package:workline_app/models/today_attendance_model.dart';
+import 'package:workline_app/widgets/%20copyright_footer.dart.dart';
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -40,7 +41,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     setState(() {
       _isLoadingLocation = true;
-      _currentAddress = "Mendapatkan lokasi Anda...";
+      _currentAddress = "Mendapatkan lokasi ...";
     });
 
     try {
@@ -177,20 +178,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       );
       if (mounted) {
         setState(() {
-          _message = "Berhasil Check In pada ${result.data.checkInTime}";
+          _message = "Successfully Checked In at ${result.data.checkInTime}";
           // Refresh today's attendance data to reflect the new check-in time
           _fetchTodayAttendance();
         });
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Check-in berhasil!")));
+        ).showSnackBar(AppSnackBar.success("Check-in successful!"));
       }
     } catch (e) {
       debugPrint("Error during check-in: $e");
       if (mounted) {
-        setState(() => _message = "Gagal Check In: ${e.toString()}");
+        setState(() => _message = "Check-in failed: ${e.toString()}");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Check-in gagal: ${e.toString()}")),
+          SnackBar(content: Text("Check-in failed: ${e.toString()}")),
         );
       }
     } finally {
@@ -203,13 +204,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Future<void> _handleCheckOut() async {
     if (_currentPosition == null) {
       if (mounted) {
-        setState(() => _message = "Lokasi tidak tersedia.");
+        setState(() => _message = "Location unavailable.");
       }
       return;
     }
-    if (_currentAddress.isEmpty || _currentAddress == "Mencari lokasi...") {
+    if (_currentAddress.isEmpty || _currentAddress == "Searching location...") {
       if (mounted) {
-        setState(() => _message = "Mohon tunggu, alamat belum ditemukan.");
+        setState(() => _message = "Please wait, address not found.");
       }
       return;
     }
@@ -226,20 +227,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       );
       if (mounted) {
         setState(() {
-          _message = "Berhasil Check Out pada ${result.data.checkOutTime}";
+          _message = "Successfully Checked Out at ${result.data.checkOutTime}";
           // Refresh today's attendance data to reflect the new check-out time
           _fetchTodayAttendance();
         });
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Check-out berhasil!")));
+        ).showSnackBar(SnackBar(content: Text("Check-out Successful!")));
       }
     } catch (e) {
       debugPrint("Error during check-out: $e");
       if (mounted) {
-        setState(() => _message = "Gagal Check Out: ${e.toString()}");
+        setState(() => _message = "Failed Check Out: ${e.toString()}");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Check-out gagal: ${e.toString()}")),
+          SnackBar(content: Text("Check-out failed: ${e.toString()}")),
         );
       }
     } finally {
@@ -282,15 +283,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           children: [
             Text(
               dayName,
-              style: AppTextStyle.heading2.copyWith(
-                fontSize: 16,
+              style: AppTextStyle.heading1.copyWith(
+                fontSize: 24,
                 color: AppColors.darkBlue,
               ),
             ),
             Text(
               formattedDate,
-              style: AppTextStyle.body.copyWith(
-                fontSize: 14,
+              style: AppTextStyle.heading2.copyWith(
+                fontSize: 20,
                 color: AppColors.blueGray,
               ),
             ),
@@ -335,8 +336,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                             const SizedBox(height: 10),
                             Text(
                               _isLoadingLocation
-                                  ? "Mencari lokasi..."
-                                  : "Lokasi tidak tersedia.",
+                                  ? "Searching for location..."
+                                  : "Location not available.",
                               style: AppTextStyle.body.copyWith(
                                 color: AppColors.blueGray,
                               ),
@@ -360,7 +361,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               _currentPosition!.longitude,
                             ),
                             infoWindow: InfoWindow(
-                              title: "Lokasi Anda",
+                              title: "Your Location",
                               snippet: _currentAddress,
                             ),
                           ),
@@ -399,7 +400,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           _isLoadingLocation ||
                           _currentPosition == null ||
                           _currentAddress.isEmpty ||
-                          _currentAddress == "Mencari lokasi..."
+                          _currentAddress == "Searching location..."
                       ? null // Disable if loading location or processing attendance or no location
                       : hasCheckedOut // If already checked out, button is disabled
                       ? null
@@ -419,9 +420,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       : Icon(hasCheckedIn ? Icons.logout : Icons.login),
               label: Text(
                 _isProcessingAttendance
-                    ? "Memproses..."
+                    ? "Processing..."
                     : hasCheckedOut
-                    ? "Sudah Check Out"
+                    ? "Already Check Out"
                     : hasCheckedIn
                     ? "Check Out"
                     : "Check In",
@@ -444,6 +445,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               ),
             ),
             const SizedBox(height: 20), // Padding at the bottom
+               const CopyrightFooter(),
+
           ],
         ),
       ),
@@ -467,7 +470,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 const Icon(Icons.location_on, color: AppColors.red, size: 24),
                 const SizedBox(width: 12),
                 Text(
-                  "Alamat Lokasi Anda",
+                  "Your Location Address",
                   style: AppTextStyle.heading2.copyWith(
                     color: AppColors.darkBlue,
                     fontSize: 16,
@@ -491,7 +494,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 const Icon(Icons.gps_fixed, color: AppColors.orange, size: 24),
                 const SizedBox(width: 12),
                 Text(
-                  "Titik Koordinat GPS",
+                  "GPS Coordinates",
                   style: AppTextStyle.heading2.copyWith(
                     color: AppColors.darkBlue,
                     fontSize: 16,
@@ -525,13 +528,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     Color statusColor;
 
     if (hasCheckedOut) {
-      statusText = "Sudah Check Out";
+      statusText = "Already Check Out";
       statusColor = AppColors.blueGray; // Grey or a neutral color
     } else if (hasCheckedIn) {
-      statusText = "Sudah Check In";
+      statusText = "Already Check In";
       statusColor = AppColors.teal; // Green for checked in
     } else {
-      statusText = "Belum Check In";
+      statusText = "Not yet Check In";
       statusColor = AppColors.orange; // Orange for pending check-in
     }
 
@@ -545,7 +548,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Status Kehadiran Hari Ini",
+              "Today's Attendance Status",
               style: AppTextStyle.heading2.copyWith(
                 color: AppColors.darkBlue,
                 fontSize: 16,

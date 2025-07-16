@@ -5,9 +5,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:workline_app/api/profile_service.dart';
 import 'package:workline_app/constants/app_colors.dart';
+import 'package:workline_app/constants/app_style.dart';
 import 'package:workline_app/models/profile_model.dart';
 import 'package:workline_app/preferences/preferences_helper.dart';
 import 'package:workline_app/screens/splash/splash_screen.dart';
+import 'package:workline_app/widgets/%20copyright_footer.dart.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -146,7 +148,7 @@ class _ProfilePageState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.softGreen,
       appBar: AppBar(
-        title: const Text("Profile"),
+        title: Text("Profile",style: AppTextStyle.heading1.copyWith(color: AppColors.darkBlue) ),
         centerTitle: true,
         backgroundColor: AppColors.success,
       ),
@@ -178,7 +180,7 @@ class _ProfilePageState extends State<ProfileScreen> {
                               : null,
                       child:
                           profile.profilePhoto == null
-                              ? const Icon(Icons.person, size: 48)
+                              ?  Icon(Icons.person, size: 48, color: AppColors.red,)
                               : null,
                     ),
                     Positioned(
@@ -202,7 +204,7 @@ class _ProfilePageState extends State<ProfileScreen> {
                                       color: Colors.white,
                                     ),
                                   )
-                                  : const Icon(Icons.camera_alt, size: 18),
+                                  :  Icon(Icons.camera_alt, size: 18, color: AppColors.paleYellow,),
                         ),
                       ),
                     ),
@@ -229,8 +231,8 @@ class _ProfilePageState extends State<ProfileScreen> {
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: () => _editNameDialog(profile),
-                icon: const Icon(Icons.edit),
-                label: const Text("Edit Name"),
+                icon:  Icon(Icons.edit, color: AppColors.teal ,),
+                label: Text("Edit Name", style: AppTextStyle.button.copyWith(color: AppColors.darkBlue),),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.paleYellow,
                 ),
@@ -239,15 +241,21 @@ class _ProfilePageState extends State<ProfileScreen> {
               OutlinedButton.icon(
                 onPressed: _logout,
                 icon: const Icon(Icons.logout, color: Colors.red),
-                label: const Text(
+                label:  Text(
                   "Logout",
-                  style: TextStyle(color: Colors.red),
+                  style: AppTextStyle.button.copyWith(color: Colors.red),
                 ),
               ),
+               const CopyrightFooter(),
+
             ],
           );
+              
+        
         },
+        
       ),
+      
     );
   }
 

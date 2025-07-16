@@ -1,8 +1,10 @@
+// lib/api/user_api.dart
+
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // Tidak diperlukan untuk UserApi, bisa dihapus
 import 'package:http/http.dart' as http;
 import 'package:workline_app/endpoint/endpoint.dart';
 import 'package:workline_app/models/batch_model.dart' as batch_model;
@@ -43,7 +45,8 @@ class UserApi {
     }
   }
 
-  static Future<bool> register({
+  // Perubahan di sini: Mengembalikan String? (pesan error) atau null (sukses)
+  static Future<String?> register({
     required String name,
     required String email,
     required String password,
@@ -52,7 +55,7 @@ class UserApi {
     required int trainingId,
     File? profilePhoto,
   }) async {
-    final url = Uri.parse('${Endpoint.baseUrl}/register'); // without `/api`
+    final url = Uri.parse('${Endpoint.baseUrl}/register');
 
     try {
       final headers = {
@@ -85,19 +88,23 @@ class UserApi {
       final data = jsonDecode(response.body);
       debugPrint("Register Response: $data");
 
+      // Periksa status code dan data
       if (response.statusCode == 200 && data['data'] != null) {
         final registerResponse = RegisterResponse.fromJson(data);
         await PreferencesHelper.saveToken(registerResponse.data.token);
         await PreferencesHelper.setLoginStatus(true);
         await PreferencesHelper.saveUser(registerResponse.data.user);
-        return true;
+        return null; // Mengembalikan null untuk menandakan sukses
       } else {
-        debugPrint('Register failed: ${data['message']}');
-        return false;
+        // Pendaftaran gagal, kembalikan pesan dari API
+        // Pastikan 'message' selalu ada di respons API untuk kasus gagal
+        return data['message'] ?? "Unknown registration error.";
       }
     } catch (e) {
       debugPrint('Register error: $e');
-      return false;
+      // Jika terjadi error di luar respons API (misal, jaringan, parsing),
+      // kembalikan pesan error umum atau dari exception itu sendiri.
+      return "Network error or unexpected response: ${e.toString()}";
     }
   }
 

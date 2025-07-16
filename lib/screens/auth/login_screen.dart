@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:workline_app/api/user_api.dart';
 import 'package:workline_app/constants/app_colors.dart';
 import 'package:workline_app/constants/app_style.dart';
+import 'package:workline_app/widgets/%20copyright_footer.dart.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -120,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       TextField(
                         controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
+                        // keyboardType: TextInputType.emailAddress,
                         decoration: AppInputStyle.textField('Email'),
                         cursorColor: AppColors.teal,
                         style: const TextStyle(color: AppColors.darkBlue),
@@ -221,6 +222,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
+               const CopyrightFooter(),
+
               ],
             ),
           ),

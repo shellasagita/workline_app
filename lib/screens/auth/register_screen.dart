@@ -1,3 +1,5 @@
+// lib/screens/auth/register_screen.dart
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -6,6 +8,9 @@ import 'package:workline_app/api/user_api.dart';
 import 'package:workline_app/constants/app_colors.dart';
 import 'package:workline_app/constants/app_style.dart';
 import 'package:workline_app/routes/app_routes.dart';
+import 'package:workline_app/widgets/%20copyright_footer.dart.dart';
+// Asumsi AppSnackBar ada di suatu tempat, misal constants/app_snack_bar.dart
+// import 'package:workline_app/constants/app_snack_bar.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,6 +23,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController(); // New controller for retype password
 
   String? _selectedGender;
   int? _selectedBatchId;
@@ -25,6 +31,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   File? _selectedImage;
 
   bool _isLoading = false;
+  bool _isPasswordVisible = false; // New state for password visibility
+  bool _isConfirmPasswordVisible = false; // New state for confirm password visibility
 
   List<DropdownMenuItem<int>> _batchItems = [];
   List<DropdownMenuItem<int>> _trainingItems = [];
@@ -35,27 +43,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _fetchDropdownData();
   }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose(); // Dispose the new controller
+    super.dispose();
+  }
+
   Future<void> _fetchDropdownData() async {
-    final batches = await UserApi.getBatchList();
-    final trainings = await UserApi.getTrainingList();
+    try {
+      final batches = await UserApi.getBatchList();
+      final trainings = await UserApi.getTrainingList();
 
-    debugPrint("Batches fetched: ${batches.length}");
-    debugPrint("Trainings fetched: ${trainings.length}");
+      debugPrint("Batches fetched: ${batches.length}");
+      debugPrint("Trainings fetched: ${trainings.length}");
 
-    setState(() {
-      _batchItems =
-          batches.map((b) {
+      if (mounted) {
+        setState(() {
+          _batchItems = batches.map((b) {
             return DropdownMenuItem<int>(
               value: b.id,
               child: Text("Batch ${b.batchKe}"),
             );
           }).toList();
 
-      _trainingItems =
-          trainings.map((t) {
+          _trainingItems = trainings.map((t) {
             return DropdownMenuItem<int>(value: t.id, child: Text(t.title));
           }).toList();
-    });
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching dropdown data: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          AppSnackBar.error("Failed to load registration options."),
+        );
+      }
+    }
   }
 
   Future<void> _pickImage() async {
@@ -74,10 +100,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim(); // Get confirm password
 
     if (name.isEmpty ||
         email.isEmpty ||
         password.isEmpty ||
+        confirmPassword.isEmpty || // Check if confirm password is empty
         _selectedGender == null ||
         _selectedBatchId == null ||
         _selectedTrainingId == null) {
@@ -87,9 +115,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    // Password matching validation
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        AppSnackBar.error("Passwords do not match. Please re-enter."),
+      );
+      return;
+    }
+
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
-    final success = await UserApi.register(
+    final String? errorMessage = await UserApi.register(
       name: name,
       email: email,
       password: password,
@@ -99,18 +136,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
       profilePhoto: _selectedImage,
     );
 
-    setState(() => _isLoading = false);
-
     if (!mounted) return;
 
-    if (success) {
+    setState(() => _isLoading = false);
+
+    if (errorMessage == null) {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(AppSnackBar.error("Registration Success. Please Login."));
+      ScaffoldMessenger.of(context).showSnackBar(
+        AppSnackBar.success("Registration Success. Please Login."),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        AppSnackBar.error("Registration failed. Please try again."),
+        AppSnackBar.error("Registration failed: $errorMessage"),
       );
     }
   }
@@ -144,41 +181,71 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: CircleAvatar(
                         radius: 40,
                         backgroundColor: AppColors.cream,
-                        backgroundImage:
-                            _selectedImage != null
-                                ? FileImage(_selectedImage!)
-                                : null,
-                        child:
-                            _selectedImage == null
-                                ? const Icon(
-                                  Icons.add_a_photo,
-                                  color: Colors.white,
-                                )
-                                : null,
+                        backgroundImage: _selectedImage != null
+                            ? FileImage(_selectedImage!)
+                            : null,
+                        child: _selectedImage == null
+                            ? const Icon(
+                                Icons.add_a_photo,
+                                color: Colors.white,
+                              )
+                            : null,
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     TextField(
                       controller: _nameController,
                       decoration: AppInputStyle.textField("Name"),
                     ),
                     const SizedBox(height: 16),
-
                     TextField(
                       controller: _emailController,
                       decoration: AppInputStyle.textField("Email"),
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 16),
-
+                    // Password Field with Visibility Toggle
                     TextField(
                       controller: _passwordController,
-                      decoration: AppInputStyle.textField("Password"),
-                      obscureText: true,
+                      obscureText: !_isPasswordVisible, // Control visibility
+                      decoration: AppInputStyle.textField("Password").copyWith(
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isPasswordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color: AppColors.darkBlue,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isPasswordVisible = !_isPasswordVisible;
+                                });
+                              },
+                            ),
+                          ),
                     ),
                     const SizedBox(height: 16),
-
+                    // Retype Password Field with Visibility Toggle
+                    TextField(
+                      controller: _confirmPasswordController,
+                      obscureText: !_isConfirmPasswordVisible, // Control visibility
+                      decoration: AppInputStyle.textField("Retype Password").copyWith(
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isConfirmPasswordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color: AppColors.darkBlue,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                                });
+                              },
+                            ),
+                          ),
+                    ),
+                    const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       value: _selectedGender,
                       decoration: AppInputStyle.textField("Gender"),
@@ -186,47 +253,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         DropdownMenuItem(value: "L", child: Text("Male")),
                         DropdownMenuItem(value: "P", child: Text("Female")),
                       ],
-                      onChanged:
-                          (value) => setState(() => _selectedGender = value),
+                      onChanged: (value) => setState(() => _selectedGender = value),
                     ),
                     const SizedBox(height: 16),
-
                     DropdownButtonFormField<int>(
                       value: _selectedBatchId,
                       decoration: AppInputStyle.textField("Batch"),
-                      items:
-                          _batchItems.isEmpty
-                              ? [
-                                const DropdownMenuItem(
-                                  value: null,
-                                  child: Text("Loading..."),
-                                ),
-                              ]
-                              : _batchItems,
-                      onChanged:
-                          (value) => setState(() => _selectedBatchId = value),
+                      items: _batchItems.isEmpty
+                          ? [
+                              const DropdownMenuItem(
+                                value: null,
+                                child: Text("Loading..."),
+                              ),
+                            ]
+                          : _batchItems,
+                      onChanged: (value) => setState(() => _selectedBatchId = value),
                     ),
                     const SizedBox(height: 16),
-
                     DropdownButtonFormField<int>(
                       value: _selectedTrainingId,
                       isExpanded: true,
                       decoration: AppInputStyle.textField("Training"),
-                      items:
-                          _trainingItems.isEmpty
-                              ? [
-                                const DropdownMenuItem(
-                                  value: null,
-                                  child: Text("Loading..."),
-                                ),
-                              ]
-                              : _trainingItems,
-                      onChanged:
-                          (value) =>
-                              setState(() => _selectedTrainingId = value),
+                      items: _trainingItems.isEmpty
+                          ? [
+                              const DropdownMenuItem(
+                                value: null,
+                                child: Text("Loading..."),
+                              ),
+                            ]
+                          : _trainingItems,
+                      onChanged: (value) => setState(() => _selectedTrainingId = value),
                     ),
                     const SizedBox(height: 24),
-
                     SizedBox(
                       width: double.infinity,
                       height: 48,
@@ -237,19 +295,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           foregroundColor: Colors.white,
                           textStyle: AppTextStyle.button,
                         ),
-                        child:
-                            _isLoading
-                                ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                )
-                                : const Text("Register"),
+                        child: _isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const Text("Register"),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -258,8 +314,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: AppTextStyle.body.copyWith(color: Colors.white),
                   ),
                   TextButton(
-                    onPressed:
-                        () => Navigator.pushNamed(context, AppRoutes.login),
+                    onPressed: () => Navigator.pushNamed(context, AppRoutes.login),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.cream,
                     ).copyWith(
@@ -271,6 +326,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ],
               ),
+               const CopyrightFooter(),
+
             ],
           ),
         ),

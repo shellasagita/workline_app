@@ -4,7 +4,8 @@ import 'package:workline_app/api/attendence_service.dart';
 import 'package:workline_app/constants/app_colors.dart';
 import 'package:workline_app/constants/app_style.dart'; // Import AppStyle for consistent typography
 import 'package:workline_app/models/history_model.dart';
-import 'package:intl/intl.dart'; // Required for advanced date formatting
+import 'package:intl/intl.dart';
+import 'package:workline_app/widgets/%20copyright_footer.dart.dart'; // Required for advanced date formatting
 
 class DetailScreen extends StatefulWidget {
   const DetailScreen({super.key});
@@ -50,46 +51,52 @@ class _DetailScreenState extends State<DetailScreen> {
       ),
       body: RefreshIndicator( // Allows pull-to-refresh
         onRefresh: _refreshHistory,
-        child: FutureBuilder<List<HistoryData>>(
-          future: _futureHistory,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.teal)); // Use app colors
-            }
-
-            if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    "Failed to load attendance history: ${snapshot.error}",
-                    textAlign: TextAlign.center,
-                    style: AppTextStyle.body.copyWith(color: AppColors.red), // Error text in red
-                  ),
-                ),
-              );
-            }
-
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(
-                child: Text(
-                  "No detailed attendance records found.",
-                  style: AppTextStyle.body.copyWith(color: AppColors.blueGray),
-                ),
-              );
-            }
-
-            final historyList = snapshot.data!;
-
-            return ListView.builder(
-              padding: const EdgeInsets.all(16.0), // Padding for the entire list
-              itemCount: historyList.length,
-              itemBuilder: (context, index) {
-                final data = historyList[index];
-                return _buildAttendanceCard(data); // Using the new detailed card widget
+        child: Column(
+          children: [
+            FutureBuilder<List<HistoryData>>(
+              future: _futureHistory,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: AppColors.teal)); // Use app colors
+                }
+            
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "Failed to load attendance history: ${snapshot.error}",
+                        textAlign: TextAlign.center,
+                        style: AppTextStyle.body.copyWith(color: AppColors.red), // Error text in red
+                      ),
+                    ),
+                  );
+                }
+            
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(
+                    child: Text(
+                      "No detailed attendance records found.",
+                      style: AppTextStyle.body.copyWith(color: const Color.fromARGB(255, 5, 12, 14)),
+                    ),
+                  );
+                }
+            
+                final historyList = snapshot.data!;
+            
+                return ListView.builder(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.all(16.0), // Padding for the entire list
+                  itemCount: historyList.length,
+                  itemBuilder: (context, index) {
+                    final data = historyList[index];
+                    return _buildAttendanceCard(data); // Using the new detailed card widget
+                  },
+                );
               },
-            );
-          },
+            ),
+            const CopyrightFooter()
+          ],
         ),
       ),
     );

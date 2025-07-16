@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart'; // Required for address from coordinates
-import 'package:geolocator/geolocator.dart'; // Required for location
-import 'package:intl/intl.dart';
-import 'package:workline_app/api/attendence_service.dart';
-import 'package:workline_app/api/profile_service.dart';
-import 'package:workline_app/constants/app_colors.dart';
-import 'package:workline_app/constants/app_style.dart';
-import 'package:workline_app/models/history_model.dart';
-import 'package:workline_app/models/login_response.dart';
-import 'package:workline_app/models/profile_model.dart';
-import 'package:workline_app/models/statatistic_attendance_model.dart';
-import 'package:workline_app/models/today_attendance_model.dart';
-import 'package:workline_app/preferences/preferences_helper.dart';
-import 'package:workline_app/screens/home/detail_page.dart'; // Assuming DetailPage is your DetailScreen
+import 'package:geocoding/geocoding.dart'; // Dibutuhkan untuk mendapatkan alamat dari koordinat
+import 'package:geolocator/geolocator.dart'; // Dibutuhkan untuk mendapatkan lokasi
+import 'package:intl/intl.dart'; // Untuk format tanggal dan waktu
+import 'package:workline_app/api/attendence_service.dart'; // Layanan untuk API Absensi
+import 'package:workline_app/api/profile_service.dart'; // Layanan untuk API Profil
+import 'package:workline_app/constants/app_colors.dart'; // Konstanta warna aplikasi
+import 'package:workline_app/constants/app_style.dart'; // Konstanta gaya teks aplikasi
+import 'package:workline_app/models/history_model.dart'; // Model data riwayat absensi
+import 'package:workline_app/models/login_response.dart'; // Model data respons login (untuk user)
+import 'package:workline_app/models/profile_model.dart'; // Model data profil pengguna
+import 'package:workline_app/models/statatistic_attendance_model.dart'; // Model data statistik absensi
+import 'package:workline_app/models/today_attendance_model.dart'; // Model data absensi hari ini
+import 'package:workline_app/preferences/preferences_helper.dart'; // Helper untuk Shared Preferences
+import 'package:workline_app/screens/home/detail_page.dart';
+import 'package:workline_app/widgets/%20copyright_footer.dart.dart'; // Halaman Detail Riwayat Absensi
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,49 +23,53 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late Future<List<HistoryData>> _futureHistory;
-  late Future<TodayAttendanceResponse> _futureToday;
-  late Future<StatisticAttendanceResponse> _futureStats;
-  User? _currentUser;
-  String _currentLocationAddress = 'Fetching location...';
-  double? _currentLatitude; // Changed to double?
-  double? _currentLongitude; // Changed to double?
-  bool _isLoadingLocation = false;
-  bool _isChecking = false;
-  DateTime? _selectedDate;
-  final TextEditingController _alasanController = TextEditingController();
+  // --- Variabel State ---
+  late Future<List<HistoryData>> _futureHistory; // Future untuk riwayat absensi
+  late Future<TodayAttendanceResponse> _futureToday; // Future untuk absensi hari ini
+  late Future<StatisticAttendanceResponse> _futureStats; // Future untuk statistik absensi
+  User? _currentUser; // Data pengguna yang sedang login
+  String _currentLocationAddress =
+      'Fetching location...'; // Alamat lokasi terkini pengguna
+  double? _currentLatitude; // Latitude lokasi terkini
+  double? _currentLongitude; // Longitude lokasi terkini
+  bool _isLoadingLocation = false; // Status loading saat mengambil lokasi
+  bool _isChecking = false; // Status saat proses check-in/out
+  DateTime? _selectedDate; // Tanggal yang dipilih untuk form izin
+  final TextEditingController _alasanController =
+      TextEditingController(); // Controller untuk input alasan izin
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
-    _futureHistory = AttendanceService.fetchAttendanceHistory();
+    _loadUserData(); // Memuat data pengguna saat inisialisasi
+    _futureHistory = AttendanceService.fetchAttendanceHistory(); // Ambil riwayat absensi
     _futureToday = AttendanceService.fetchTodayAttendance(
       DateFormat('yyyy-MM-dd').format(DateTime.now()),
-    );
-    _futureStats = AttendanceService.fetchStats();
-    _fetchCurrentLocation();
+    ); // Ambil absensi hari ini
+    _futureStats = AttendanceService.fetchStats(); // Ambil statistik absensi
+    _fetchCurrentLocation(); // Ambil lokasi terkini pengguna
   }
 
+  // Memuat data pengguna dari PreferencesHelper
   Future<void> _loadUserData() async {
     final user = await PreferencesHelper.getUser();
     if (mounted) {
-      // Check if widget is still mounted before calling setState
       setState(() {
         _currentUser = user;
       });
     }
   }
 
-  /// Location Fetching and Distance Calculation
+  /// Mengambil lokasi terkini pengguna dan mengonversinya menjadi alamat.
   Future<void> _fetchCurrentLocation() async {
-    if (!mounted) return; // Important: Check mounted status early
+    if (!mounted) return;
 
     setState(() {
-      _isLoadingLocation = true;
+      _isLoadingLocation = true; // Set status loading lokasi
       _currentLocationAddress = 'Getting your location...';
     });
     try {
+      // Cek dan minta izin lokasi
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -89,25 +94,26 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
 
+      // Ambil posisi GPS terkini
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
+      // Konversi koordinat menjadi alamat
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
       );
 
       if (mounted) {
-        // Check mounted before setState
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks.first;
           setState(() {
-            _currentLatitude = position.latitude; // Assign double directly
-            _currentLongitude = position.longitude; // Assign double directly
+            _currentLatitude = position.latitude;
+            _currentLongitude = position.longitude;
             _currentLocationAddress =
                 "${place.street}, ${place.subLocality}, ${place.locality}, ${place.administrativeArea}, ${place.country}";
-            _isLoadingLocation = false;
+            _isLoadingLocation = false; // Selesai loading
           });
         } else {
           setState(() {
@@ -117,12 +123,9 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     } catch (e) {
-      // Avoid print in production, use a logging framework
       debugPrint(
-        "Error fetching location: $e",
-      ); // Use debugPrint for development
+          "Error fetching location: $e"); // Log error untuk debugging
       if (mounted) {
-        // Check mounted before setState
         setState(() {
           _currentLocationAddress = 'Error fetching location: $e';
           _isLoadingLocation = false;
@@ -131,16 +134,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Placeholder untuk menghitung jarak ke kantor (perlu implementasi nyata)
   String _getDistanceToOffice() {
-    // You would implement actual distance calculation here
-    // using _currentLatitude, _currentLongitude and office coordinates.
-    // For now, it's a placeholder.
     return '250.43m';
   }
 
+  /// Menangani proses Check-in.
   Future<void> _handleCheckIn() async {
-    if (_isChecking) return;
-    // Check if location data is available before attempting check-in
+    if (_isChecking) return; // Mencegah double klik
     if (_currentLatitude == null || _currentLongitude == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -152,23 +153,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (mounted) {
       setState(() {
-        _isChecking = true;
+        _isChecking = true; // Set status sedang proses check-in/out
       });
     }
 
     try {
       await AttendanceService.checkIn(
-        // FIX: Use 'lat' and 'lng' named parameters
-        lat: _currentLatitude!,
-        lng: _currentLongitude!,
-        address: _currentLocationAddress, // Optional, depending on your API
+        lat: _currentLatitude!, // Kirim latitude
+        lng: _currentLongitude!, // Kirim longitude
+        address: _currentLocationAddress, // Kirim alamat
       );
       if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Check-in successful!')));
       }
-      _refreshData();
+      _refreshData(); // Refresh data setelah berhasil
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -178,14 +178,15 @@ class _HomeScreenState extends State<HomeScreen> {
     } finally {
       if (mounted) {
         setState(() {
-          _isChecking = false;
+          _isChecking = false; // Selesai proses
         });
       }
     }
   }
 
+  /// Menangani proses Check-out.
   Future<void> _handleCheckOut() async {
-    if (_isChecking) return;
+    if (_isChecking) return; // Mencegah double klik
     if (_currentLatitude == null || _currentLongitude == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -197,23 +198,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (mounted) {
       setState(() {
-        _isChecking = true;
+        _isChecking = true; // Set status sedang proses check-in/out
       });
     }
 
     try {
       await AttendanceService.checkOut(
-        // FIX: Use 'lat' and 'lng' named parameters
-        lat: _currentLatitude!,
-        lng: _currentLongitude!,
-        address: _currentLocationAddress, // Optional, depending on your API
+        lat: _currentLatitude!, // Kirim latitude
+        lng: _currentLongitude!, // Kirim longitude
+        address: _currentLocationAddress, // Kirim alamat
       );
       if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Check-out successful!')));
       }
-      _refreshData();
+      _refreshData(); // Refresh data setelah berhasil
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -223,14 +223,15 @@ class _HomeScreenState extends State<HomeScreen> {
     } finally {
       if (mounted) {
         setState(() {
-          _isChecking = false;
+          _isChecking = false; // Selesai proses
         });
       }
     }
   }
 
+  /// Memuat ulang semua data (riwayat, absensi hari ini, statistik, profil, lokasi).
   Future<void> _refreshData() async {
-    if (!mounted) return; // Check mounted status early
+    if (!mounted) return;
 
     setState(() {
       _futureHistory = AttendanceService.fetchAttendanceHistory();
@@ -239,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       _futureStats = AttendanceService.fetchStats();
       _loadUserData();
-      _fetchCurrentLocation(); // Re-fetch location on refresh
+      _fetchCurrentLocation(); // Ambil ulang lokasi saat refresh
     });
   }
 
@@ -247,69 +248,76 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.softGreen,
-      // bottomNavigationBar: const BottomNavBar(),
       body: RefreshIndicator(
-        onRefresh: _refreshData,
+        onRefresh: _refreshData, // Fungsi untuk refresh data saat pull down
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(),
+                _buildHeader(), // Bagian header (salam dan nama user)
                 const SizedBox(height: 16),
-                _buildLocationInfo(),
+                _buildLocationInfo(), // Informasi lokasi terkini
                 const SizedBox(height: 20),
-                _buildCheckInOutBox(),
+                _buildCheckInOutBox(), // Kotak informasi check-in/out hari ini
                 const SizedBox(height: 20),
-                _buildStatisticBox(),
+                _buildStatisticBox(), // Kotak statistik absensi
                 const SizedBox(height: 20),
-                _buildIzinForm(),
+                _buildIzinForm(), // Form pengajuan izin
+                // Bagian-bagian yang di-comment out (tombol aksi, jarak, peta)
                 // const SizedBox(height: 20),
                 // _buildActionButtons(),
                 // const SizedBox(height: 20),
                 // _buildDistanceAndMap(),
                 const SizedBox(height: 24),
-                _buildHistoryHeader(),
-                _buildAttendanceHistory(),
+                _buildHistoryHeader(), // Header untuk riwayat absensi
+                _buildAttendanceHistory(), // Daftar riwayat absensi
+              
+               const CopyrightFooter(),
+              
               ],
             ),
+            
           ),
-        ),
-      ),
-    );
+        ))
+
+        )
+        ;
   }
 
+  /// Menangani pengajuan izin tidak hadir.
   Future<void> _handleAjukanIzin() async {
     if (_selectedDate == null || _alasanController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mohon isi tanggal dan alasan izin.')),
+        const SnackBar(content: Text('Please fill date and reason for leave.')), // Teks Snack Bar
       );
       return;
     }
 
     try {
       await AttendanceService.ajukanIzin(
-        date: DateFormat('yyyy-MM-dd').format(_selectedDate!),
-        alasan: _alasanController.text.trim(),
+        date: DateFormat('yyyy-MM-dd').format(_selectedDate!), // Tanggal izin
+        alasan: _alasanController.text.trim(), // Alasan izin
       );
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Izin berhasil diajukan.')));
+      ).showSnackBar(const SnackBar(content: Text('Leave request submitted successfully.'))); // Teks Snack Bar
 
-      // Reset form
+      // Reset form setelah berhasil
       setState(() {
         _selectedDate = null;
         _alasanController.clear();
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mengajukan izin: ${e.toString()}')),
+        SnackBar(content: Text('Failed to submit leave request: ${e.toString()}')), // Teks Snack Bar
       );
     }
   }
 
+  /// Membangun widget form untuk pengajuan izin.
   Widget _buildIzinForm() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -322,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Form Izin Tidak Hadir",
+            "Leave Request Form", // Judul form
             style: AppTextStyle.heading2.copyWith(
               fontSize: 16,
               color: AppColors.darkBlue,
@@ -331,6 +339,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 12),
           TextButton.icon(
             onPressed: () async {
+              // Buka date picker untuk memilih tanggal
               final picked = await showDatePicker(
                 context: context,
                 initialDate: DateTime.now(),
@@ -346,11 +355,11 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.date_range, color: AppColors.teal),
             label: Text(
               _selectedDate == null
-                  ? "Pilih Tanggal"
+                  ? "Select Date" // Teks jika belum ada tanggal dipilih
                   : DateFormat(
-                    'EEEE, dd MMMM yyyy',
-                    'id_ID',
-                  ).format(_selectedDate!),
+                      'EEEE, dd MMMM yyyy',
+                      'en_US', // Format tanggal dengan nama hari dalam Bahasa Inggris
+                    ).format(_selectedDate!),
               style: AppTextStyle.body.copyWith(
                 color: AppColors.blueGray,
                 fontWeight: FontWeight.w500,
@@ -359,10 +368,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 8),
           TextField(
-            controller: _alasanController,
+            controller: _alasanController, // Input alasan izin
             maxLines: 3,
             decoration: InputDecoration(
-              hintText: "Tuliskan alasan izin...",
+              hintText: "Enter your reason...", // Placeholder teks
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
@@ -375,9 +384,11 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: _handleAjukanIzin,
-              icon: const Icon(Icons.send),
-              label: const Text("Ajukan Izin"),
+              onPressed: _handleAjukanIzin, // Tombol untuk mengajukan izin
+              icon: Icon(Icons.send, color:  AppColors.yellow,),
+              label:  Text("Submit Leave",style: AppTextStyle.button.copyWith(
+                fontSize: 16,
+                color: AppColors.yellow)), // Teks tombol
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.teal,
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -392,7 +403,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatisticBox() {
+  /// Membangun widget kotak statistik absensi.
+ Widget _buildStatisticBox() {
     return FutureBuilder<StatisticAttendanceResponse>(
       future: _futureStats,
       builder: (context, snapshot) {
@@ -404,7 +416,7 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Center(
-              child: CircularProgressIndicator(color: AppColors.teal),
+              child: CircularProgressIndicator(color: AppColors.teal), // Indikator loading
             ),
           );
         }
@@ -420,7 +432,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: const Center(
               child: Text(
-                "Gagal memuat statistik.",
+                "Failed to load statistics.", // Pesan error jika gagal
                 style: TextStyle(color: Colors.red),
               ),
             ),
@@ -440,7 +452,7 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Statistik Absensi",
+                "Attendance Statistics", // Judul statistik
                 style: AppTextStyle.heading2.copyWith(
                   fontSize: 16,
                   color: AppColors.darkBlue,
@@ -450,9 +462,9 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _statItem("Total Absen", data.totalAbsen.toString()),
-                  _statItem("Masuk", data.totalMasuk.toString()),
-                  _statItem("Izin", data.totalIzin.toString()),
+                  _statItem("Total Absences", data.totalAbsen.toString()), // Item statistik Total Absen
+                  _statItem("Present", data.totalMasuk.toString()), // Item statistik Masuk
+                  _statItem("Leave", data.totalIzin.toString()), // Item statistik Izin
                 ],
               ),
               const SizedBox(height: 12),
@@ -463,13 +475,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Text(
                       data.sudahAbsenHariIni
-                          ? "Anda sudah absen hari ini."
-                          : "Anda belum absen hari ini.",
+                          ? "You have checked in today" // Status sudah absen
+                          : "You haven't checked in today.", // Status belum absen
                       style: AppTextStyle.body.copyWith(
                         color:
-                            data.sudahAbsenHariIni
-                                ? AppColors.teal
-                                : AppColors.red,
+                            data.sudahAbsenHariIni ? AppColors.teal : AppColors.red,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -483,6 +493,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// Helper untuk menampilkan satu item statistik (label & nilai).
   Widget _statItem(String label, String value) {
     return Column(
       children: [
@@ -507,18 +518,18 @@ class _HomeScreenState extends State<HomeScreen> {
     String greeting;
     final hour = DateTime.now().hour;
     if (hour < 12) {
-      greeting = 'Good Morning!';
+      greeting = 'Good Morning!'; // Sapaan pagi
     } else if (hour < 17) {
-      greeting = 'Good Afternoon!';
+      greeting = 'Good Afternoon!'; // Sapaan siang/sore
     } else {
-      greeting = 'Good Evening!';
+      greeting = 'Good Evening!'; // Sapaan malam
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          greeting,
+          greeting, // Teks sapaan
           style: AppTextStyle.heading1.copyWith(
             fontSize: 22,
             color: AppColors.darkBlue,
@@ -526,12 +537,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 4),
         FutureBuilder<ProfileData>(
-          future: ProfileService.fetchProfile(),
+          future: ProfileService.fetchProfile(), // Ambil data profil
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return Text(
-                snapshot.data!.name ?? 'User',
-                style: AppTextStyle.body.copyWith(
+                snapshot.data!.name ?? 'User', // Nama pengguna
+                style: AppTextStyle.heading2.copyWith(
                   fontSize: 16,
                   color: AppColors.darkBlue,
                 ),
@@ -540,7 +551,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return SizedBox(
                 height: 16,
                 child: Center(
-                  child: CircularProgressIndicator(color: AppColors.teal),
+                  child: CircularProgressIndicator(color: AppColors.teal), // Loading nama
                 ),
               );
             }
@@ -555,13 +566,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       children: [
         Icon(
-          _isLoadingLocation ? Icons.location_searching : Icons.location_on,
+          _isLoadingLocation
+              ? Icons.location_searching
+              : Icons.location_on, // Ikon lokasi (loading/on)
           color: _isLoadingLocation ? AppColors.blueGray : AppColors.red,
         ),
         const SizedBox(width: 4),
         Expanded(
           child: Text(
-            _currentLocationAddress,
+            _currentLocationAddress, // Teks alamat lokasi
             style: AppTextStyle.body.copyWith(
               fontSize: 13,
               color: AppColors.blueGray,
@@ -591,7 +604,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             height: 100,
             child: const Center(
-              child: CircularProgressIndicator(color: AppColors.teal),
+              child: CircularProgressIndicator(color: AppColors.teal), // Loading box
             ),
           );
         }
@@ -599,13 +612,13 @@ class _HomeScreenState extends State<HomeScreen> {
         if (snapshot.hasError ||
             !snapshot.hasData ||
             snapshot.data?.data == null) {
-          return _renderCheckInOutBox('-', '-');
+          return _renderCheckInOutBox('-', '-'); // Tampilan default jika error/data kosong
         }
 
         final data = snapshot.data!.data!;
         return _renderCheckInOutBox(
-          data.checkInTime ?? '-',
-          data.checkOutTime ?? '-',
+          data.checkInTime ?? '-', // Waktu check-in
+          data.checkOutTime ?? '-', // Waktu check-out
         );
       },
     );
@@ -623,14 +636,14 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _attendanceBox('Check In', checkIn),
+          _attendanceBox('Check In', checkIn), // Kotak Check In
           const VerticalDivider(
             color: AppColors.blueGray,
             thickness: 1,
             indent: 8,
             endIndent: 8,
           ),
-          _attendanceBox('Check Out', checkOut),
+          _attendanceBox('Check Out', checkOut), // Kotak Check Out
         ],
       ),
     );
@@ -641,25 +654,26 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         Text(
-          label,
-          style: AppTextStyle.body.copyWith(
+          label, // Label (Check In/Check Out)
+          style: AppTextStyle.heading2.copyWith(
             fontSize: 14,
-            color: AppColors.blueGray,
+            color: AppColors.teal,
           ),
         ),
         const SizedBox(height: 4),
         Text(
-          time,
+          time, // Waktu (HH:mm)
           style: AppTextStyle.heading2.copyWith(
             fontSize: 18,
-            color: AppColors.darkBlue,
+            color: AppColors.red,
           ),
         ),
       ],
     );
   }
 
-  /// NEW: Check In/Check Out Buttons
+  /// Tombol Check In/Check Out (saat ini tidak dipakai di build utama).
+/// NEW: Check In/Check Out Buttons
   Widget _buildActionButtons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -681,9 +695,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 _isChecking
                     ? const CircularProgressIndicator(color: Colors.white)
                     : Text(
-                      'Check In',
-                      style: AppTextStyle.button.copyWith(color: Colors.white),
-                    ),
+                        'Check In',
+                        style: AppTextStyle.button.copyWith(color: Colors.white),
+                      ),
           ),
         ),
         const SizedBox(width: 16),
@@ -704,16 +718,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 _isChecking
                     ? const CircularProgressIndicator(color: Colors.white)
                     : Text(
-                      'Check Out',
-                      style: AppTextStyle.button.copyWith(color: Colors.white),
-                    ),
+                        'Check Out',
+                        style: AppTextStyle.button.copyWith(color: Colors.white),
+                      ),
           ),
         ),
       ],
     );
   }
 
-  /// Builds the distance to office and map view section.
+  /// Membangun bagian jarak ke kantor dan tampilan peta (saat ini tidak dipakai di build utama).
   Widget _buildDistanceAndMap() {
     return Row(
       children: [
@@ -734,7 +748,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Icon(Icons.directions_walk, color: AppColors.orange),
                   const SizedBox(height: 8),
                   Text(
-                    _getDistanceToOffice(),
+                    _getDistanceToOffice(), // Menampilkan jarak ke kantor
                     style: AppTextStyle.body.copyWith(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -762,17 +776,17 @@ class _HomeScreenState extends State<HomeScreen> {
               color: AppColors.lightGrey,
               boxShadow: [
                 BoxShadow(color: AppColors.greyShadow, blurRadius: 4),
-              ], // FIX: Corrected typo 'box boxShadow'
+              ],
               image: const DecorationImage(
                 image: NetworkImage(
                   'https://via.placeholder.com/200x100?text=Map+View',
-                ),
+                ), // Placeholder gambar peta
                 fit: BoxFit.cover,
               ),
             ),
             child: Center(
               child: Text(
-                'Office Location',
+                'Office Location', // Teks lokasi kantor di atas peta
                 style: AppTextStyle.body.copyWith(
                   color: Colors.white.withAlpha((255 * 0.9).round()),
                   fontWeight: FontWeight.bold,
@@ -792,13 +806,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Builds the header for the attendance history section.
+  /// Membangun header untuk bagian riwayat absensi.
   Widget _buildHistoryHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Attendance History',
+          'Attendance History', // Judul riwayat absensi
           style: AppTextStyle.heading2.copyWith(
             fontSize: 16,
             color: AppColors.darkBlue,
@@ -809,8 +823,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const DetailScreen(),
-              ), // Navigating to DetailScreen
+                builder: (context) => const DetailScreen(), // Tombol "See All" menuju DetailScreen
+              ),
             );
           },
           child: Text(
@@ -822,21 +836,21 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Builds the FutureBuilder for the list of attendance history.
+  /// Membangun FutureBuilder untuk daftar riwayat absensi.
   Widget _buildAttendanceHistory() {
     return FutureBuilder<List<HistoryData>>(
       future: _futureHistory,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-            child: CircularProgressIndicator(color: AppColors.teal),
+            child: CircularProgressIndicator(color: AppColors.teal), // Indikator loading riwayat
           );
         }
 
         if (snapshot.hasError) {
           return Center(
             child: Text(
-              "Error loading history: ${snapshot.error}",
+              "Error loading history: ${snapshot.error}", // Pesan error riwayat
               style: AppTextStyle.body.copyWith(color: AppColors.red),
             ),
           );
@@ -845,7 +859,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Center(
             child: Text(
-              "No attendance records found.",
+              "No attendance records found.", // Pesan jika tidak ada riwayat
               style: AppTextStyle.body.copyWith(color: AppColors.blueGray),
             ),
           );
@@ -853,13 +867,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final list = snapshot.data!;
 
-        // Limit to, say, 3 recent history items for HomeScreen preview
+        // Batasi tampilan hanya 3 item riwayat terbaru untuk preview di HomeScreen
         final displayedList = list.take(3).toList();
 
         return ListView.separated(
-          itemCount: displayedList.length, // Use displayedList count
+          itemCount: displayedList.length,
           shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(), // Non-scrollable agar tidak konflik dengan SingleChildScrollView
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final data = displayedList[index];
@@ -869,14 +883,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               title: Text(
-                _getWeekDay(data.attendanceDate),
+                _getWeekDay(data.attendanceDate), // Nama hari (misal: Monday)
                 style: AppTextStyle.body.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.darkBlue,
                 ),
               ),
               subtitle: Text(
-                DateFormat('dd MMMM yyyy').format(data.attendanceDate),
+                DateFormat('dd MMMM yyyy').format(data.attendanceDate), // Tanggal absensi
                 style: AppTextStyle.body.copyWith(color: AppColors.blueGray),
               ),
               trailing: Column(
@@ -884,14 +898,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    'Check In: ${data.checkInTime ?? '-'}',
+                    'Check In: ${data.checkInTime ?? '-'}', // Waktu Check In
                     style: AppTextStyle.body.copyWith(
                       color: AppColors.darkBlue,
                       fontSize: 13,
                     ),
                   ),
                   Text(
-                    'Check Out: ${data.checkOutTime ?? '-'}',
+                    'Check Out: ${data.checkOutTime ?? '-'}', // Waktu Check Out
                     style: AppTextStyle.body.copyWith(
                       color: AppColors.darkBlue,
                       fontSize: 13,
@@ -906,6 +920,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Mengambil nama hari dari objek DateTime.
   String _getWeekDay(DateTime date) {
     return DateFormat('EEEE').format(date);
   }

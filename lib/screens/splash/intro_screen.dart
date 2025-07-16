@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:workline_app/constants/app_colors.dart';
+import 'package:workline_app/constants/app_images.dart';
 import 'package:workline_app/constants/app_style.dart';
 import 'package:workline_app/routes/app_routes.dart';
+import 'package:workline_app/widgets/%20copyright_footer.dart.dart';
 
 class IntroScreen extends StatelessWidget {
   const IntroScreen({super.key});
@@ -15,7 +17,9 @@ class IntroScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
+          children: [Image.asset(
+              AppImage.logoGif,
+            ),
             const Spacer(),
             Text(
               'WorkLine',
@@ -33,33 +37,38 @@ class IntroScreen extends StatelessWidget {
                 color: Colors.white70,
               ),
             ),
-            const SizedBox(height: 32),
-            Text(
-              'Managing Work from Anywhere',
-              textAlign: TextAlign.center,
-              style: AppTextStyle.body.copyWith(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
-            ),
+            // const SizedBox(height: 32),
+            // Text(
+            //   'Managing Work from Anywhere',
+            //   textAlign: TextAlign.center,
+            //   style: AppTextStyle.body.copyWith(
+            //     fontSize: 16,
+            //     color: Colors.white70,
+            //   ),
+            // ),
             const Spacer(),
             SizedBox(
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.darkBlue,
+                  backgroundColor: AppColors.cream,
                 ),
                 onPressed: () {
                   Navigator.pushReplacementNamed(context, AppRoutes.login);
                 },
-                child: const Text('Get Started'),
+                child:  Text('Get Started', style: AppTextStyle.button.copyWith(
+                fontSize: 16,
+                color: AppColors.darkBlue),
               ),
-            ),
+            ),),
             const SizedBox(height: 40),
           ],
+          
         ),
       ),
+              
+       
     );
   }
 }
