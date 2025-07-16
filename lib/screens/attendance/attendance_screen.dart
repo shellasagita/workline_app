@@ -191,7 +191,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       if (mounted) {
         setState(() => _message = "Check-in failed: ${e.toString()}");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Check-in failed: ${e.toString()}")),
+          AppSnackBar.error(("Check-in failed: ${e.toString()}")),
         );
       }
     } finally {
@@ -233,15 +233,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         });
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Check-out Successful!")));
+        ).showSnackBar(AppSnackBar.success("Check-out Successful!"));
       }
     } catch (e) {
       debugPrint("Error during check-out: $e");
       if (mounted) {
         setState(() => _message = "Failed Check Out: ${e.toString()}");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Check-out failed: ${e.toString()}")),
-        );
+          AppSnackBar.error("Check-out failed: ${e.toString()}"))
+        ;
       }
     } finally {
       if (mounted) {

@@ -172,8 +172,8 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Check-in failed: ${e.toString()}')),
-        );
+          AppSnackBar.error('Check-in failed: ${e.toString()}'))
+        ;
       }
     } finally {
       if (mounted) {
@@ -217,8 +217,8 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Check-out failed: ${e.toString()}')),
-        );
+          AppSnackBar.error('Check-out failed: ${e.toString()}'))
+        ;
       }
     } finally {
       if (mounted) {
@@ -290,8 +290,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _handleAjukanIzin() async {
     if (_selectedDate == null || _alasanController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill date and reason for leave.')), // Teks Snack Bar
-      );
+        AppSnackBar.error('Please fill date and reason for leave.')) // Teks Snack Bar
+      ;
       return;
     }
 
@@ -312,8 +312,8 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to submit leave request: ${e.toString()}')), // Teks Snack Bar
-      );
+        AppSnackBar.error('Failed to submit leave request: ${e.toString()}')) // Teks Snack Bar
+      ;
     }
   }
 
